@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import json
 import time
+import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 
@@ -97,11 +98,20 @@ class Handler(BaseHTTPRequestHandler):
         self._json(200, {"id": "email_mock_123"})
 
 
+class MockServer(ThreadingHTTPServer):
+    daemon_threads = True
+
+    def handle_error(self, request: object, client_address: object) -> None:
+        if isinstance(sys.exception(), ConnectionError):
+            return
+        super().handle_error(request, client_address)
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--port", type=int, default=18765)
     args = parser.parse_args()
-    ThreadingHTTPServer(("127.0.0.1", args.port), Handler).serve_forever()
+    MockServer(("127.0.0.1", args.port), Handler).serve_forever()
 
 
 if __name__ == "__main__":
