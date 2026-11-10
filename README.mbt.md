@@ -125,6 +125,14 @@ moon fmt
 
 The live adapter example also compiles in CI on the native target. On Windows, native builds require MSVC Build Tools with the C++ workload and Windows SDK; the default wasm checks do not.
 
+The adapter integration suite starts a local Resend-compatible fixture and never
+contacts Resend. Run it with Python available:
+
+~~~sh
+python tests/mock_resend_server.py --port 18765
+MOON_RESEND_MOCK_URL=http://127.0.0.1:18765 moon test adapter --target js
+~~~
+
 ## License
 
 Apache-2.0

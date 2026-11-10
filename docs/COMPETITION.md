@@ -31,6 +31,7 @@ Never expose the API key in a screen recording, source file, shell history or CI
 | Typed API and transport errors | Complete |
 | Real HTTP adapter | Complete with moonfetch |
 | Webhook verification | Implemented for 0.2.0 with HMAC-SHA256 and freshness checks |
+| Real HTTP adapter integration | Local fixture verifies headers, JSON, errors and timeouts in CI |
 | Domains and contacts | January milestone |
 | Full Resend API parity | Deliberately out of scope |
 

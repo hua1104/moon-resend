@@ -20,8 +20,9 @@ Acceptance: `moon check`, `moon test`, `moon info`, formatting and the offline e
 Estimated effort: 4–6 focused development days.
 
 - harden the moonfetch adapter delivered early in November;
-- expand integration coverage with a local mock server;
-- mock-server integration tests for headers, bodies, failures and timeouts;
+- expand integration coverage with a local mock server (implemented for 0.2.0);
+- mock-server integration tests for headers, bodies, failures and timeouts
+  (implemented for 0.2.0 and exercised in CI);
 - webhook signature verification with documented replay protection (implemented
   early for 0.2.0; duplicate event ids remain application storage policy).
 

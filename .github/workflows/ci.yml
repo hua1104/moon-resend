@@ -28,6 +28,26 @@ jobs:
       - name: Test wasm
         run: moon test
 
+      - name: Test real HTTP adapter against local fixture
+        env:
+          MOON_RESEND_MOCK_URL: http://127.0.0.1:18765
+        run: |
+          python3 tests/mock_resend_server.py --port 18765 &
+          server_pid=$!
+          trap 'kill $server_pid' EXIT
+          python3 - <<'PY'
+          import socket, time
+          for _ in range(100):
+              try:
+                  socket.create_connection(("127.0.0.1", 18765), timeout=.1).close()
+                  break
+              except OSError:
+                  time.sleep(.05)
+          else:
+              raise SystemExit("mock server did not start")
+          PY
+          moon test adapter --target js
+
       - name: Test native adapter
         run: moon test --target native
 

@@ -4,5 +4,9 @@ import {
 }
 
 import {
+  "moonbitlang/core/env",
+} for "test"
+
+import {
   "moonbitlang/async",
 } for "test"
