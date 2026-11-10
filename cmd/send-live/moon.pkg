@@ -1,6 +1,6 @@
 import {
-  "moonsaas/moon-resend" @resend,
-  "moonsaas/moon-resend/adapter",
+  "hua1104/moon-resend" @resend,
+  "hua1104/moon-resend/adapter",
   "moonbitlang/async",
   "moonbitlang/core/env",
 }

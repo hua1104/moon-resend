@@ -9,7 +9,7 @@
 //   "moonbitlang/x@0.4.6",
 // }
 
-name = "moonsaas/moon-resend"
+name = "hua1104/moon-resend"
 
 version = "0.1.0"
 

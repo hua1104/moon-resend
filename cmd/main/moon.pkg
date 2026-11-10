@@ -1,5 +1,5 @@
 import {
-  "moonsaas/moon-resend" @resend,
+  "hua1104/moon-resend" @resend,
 }
 
 pkgtype(kind: "executable")

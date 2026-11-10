@@ -49,7 +49,7 @@ HttpRequest is deliberately transport-neutral. This keeps request construction a
 
 ## Send over HTTPS
 
-The `moonsaas/moon-resend/adapter` package provides the supported moonfetch integration:
+The `hua1104/moon-resend/adapter` package provides the supported moonfetch integration:
 
 ~~~moonbit nocheck
 ///|
