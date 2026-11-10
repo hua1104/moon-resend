@@ -1,0 +1,27 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonsaas/moon-resend/adapter"
+
+import {
+  "moonsaas/moon-resend",
+}
+
+// Values
+pub async fn cancel(@moon-resend.Client, String, timeout? : Int32) -> Result[@moon-resend.EmailId, @moon-resend.ResendError]
+
+pub async fn execute(@moon-resend.HttpRequest, timeout? : Int32) -> Result[@moon-resend.HttpResponse, @moon-resend.ResendError]
+
+pub async fn retrieve(@moon-resend.Client, String, timeout? : Int32) -> Result[@moon-resend.RetrievedEmail, @moon-resend.ResendError]
+
+pub async fn send(@moon-resend.Client, @moon-resend.SendEmailParams, idempotency_key? : String, timeout? : Int32) -> Result[@moon-resend.EmailId, @moon-resend.ResendError]
+
+pub async fn send_batch(@moon-resend.Client, Array[@moon-resend.SendEmailParams], idempotency_key? : String, timeout? : Int32) -> Result[@moon-resend.BatchEmailIds, @moon-resend.ResendError]
+
+pub async fn update(@moon-resend.Client, String, @moon-resend.UpdateEmailParams, timeout? : Int32) -> Result[@moon-resend.EmailId, @moon-resend.ResendError]
+
+// Errors
+
+// Types and methods
+
+// Type aliases
+
+// Traits

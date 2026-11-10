@@ -29,6 +29,18 @@ pub fn HttpRequest::body(self : HttpRequest) -> String? {
 }
 
 ///|
+/// Construct a custom request for adapters and tests. Most applications should
+/// use the request builders on `Client`.
+pub fn HttpRequest::new(
+  verb : String,
+  url : String,
+  headers? : Array[(String, String)],
+  body? : String,
+) -> HttpRequest {
+  { verb, url, headers: headers.unwrap_or([]), body, }
+}
+
+///|
 /// A transport-neutral HTTP response returned by an adapter or test fake.
 pub struct HttpResponse {
   status : Int32
@@ -233,8 +245,26 @@ pub fn ApiError::message(self : ApiError) -> String {
 }
 
 ///|
+pub fn ApiError::raw_body(self : ApiError) -> String {
+  self.raw_body
+}
+
+///|
 pub enum ResendError {
   InvalidInput(String)
   Api(ApiError)
   InvalidResponse(String)
+  Transport(String)
+}
+
+///|
+/// Create an input error from an adapter or extension package.
+pub fn ResendError::invalid_input(message : String) -> ResendError {
+  InvalidInput(message)
+}
+
+///|
+/// Create a network, TLS or timeout error from a transport adapter.
+pub fn ResendError::transport(message : String) -> ResendError {
+  Transport(message)
 }

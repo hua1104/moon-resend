@@ -1,20 +1,25 @@
 // Generated using `moon info`, DON'T EDIT IT
 package "moonsaas/moon-resend"
 
+import {
+  "moonbitlang/core/json",
+}
+
 // Values
 
 // Errors
 
 // Types and methods
 pub struct ApiError {
-  status : Int
+  status : Int32
   name : String
   message : String
   raw_body : String
 }
 pub fn ApiError::message(Self) -> String
 pub fn ApiError::name(Self) -> String
-pub fn ApiError::status(Self) -> Int
+pub fn ApiError::raw_body(Self) -> String
+pub fn ApiError::status(Self) -> Int32
 
 pub struct Attachment {
   content : String
@@ -56,24 +61,28 @@ pub struct HttpRequest {
 }
 pub fn HttpRequest::body(Self) -> String?
 pub fn HttpRequest::headers(Self) -> Array[(String, String)]
+pub fn HttpRequest::new(String, String, headers? : Array[(String, String)], body? : String) -> Self
 pub fn HttpRequest::url(Self) -> String
 pub fn HttpRequest::verb(Self) -> String
 
 pub struct HttpResponse {
-  status : Int
+  status : Int32
   headers : Array[(String, String)]
   body : String
 }
 pub fn HttpResponse::body(Self) -> String
 pub fn HttpResponse::headers(Self) -> Array[(String, String)]
-pub fn HttpResponse::new(Int, String, headers? : Array[(String, String)]) -> Self
-pub fn HttpResponse::status(Self) -> Int
+pub fn HttpResponse::new(Int32, String, headers? : Array[(String, String)]) -> Self
+pub fn HttpResponse::status(Self) -> Int32
 
 pub enum ResendError {
   InvalidInput(String)
   Api(ApiError)
   InvalidResponse(String)
+  Transport(String)
 }
+pub fn ResendError::invalid_input(String) -> Self
+pub fn ResendError::transport(String) -> Self
 
 pub struct RetrievedEmail {
   id : String
@@ -112,7 +121,7 @@ pub struct SendEmailParams {
 }
 pub fn SendEmailParams::json_string(Self) -> String
 pub fn SendEmailParams::new(String, Array[String], String, html? : String, text? : String, cc? : Array[String], bcc? : Array[String], reply_to? : Array[String], attachments? : Array[Attachment], tags? : Array[(String, String)], scheduled_at? : String) -> Self
-pub fn SendEmailParams::to_json(Self) -> Json
+pub fn SendEmailParams::to_json(Self) -> @json.Json
 
 pub struct UpdateEmailParams {
   scheduled_at : String

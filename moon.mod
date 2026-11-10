@@ -15,7 +15,7 @@ version = "0.1.0"
 
 readme = "README.mbt.md"
 
-repository = "https://github.com/moonsaas/moon-resend"
+repository = "https://github.com/hua1104/moon-resend"
 
 license = "Apache-2.0"
 
@@ -23,4 +23,9 @@ keywords = [ "resend", "email", "sdk", "saas", "moonbit" ]
 
 preferred_target = "wasm"
 
-description = "A transport-neutral MoonBit SDK for the Resend Email API"
+description = "A typed MoonBit SDK for Resend with a moonfetch HTTP adapter"
+
+import {
+  "moonbitlang/async@0.22.5",
+  "moonbitstack/moonfetch@0.1.8",
+}

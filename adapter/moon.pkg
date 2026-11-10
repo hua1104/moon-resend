@@ -1,0 +1,8 @@
+import {
+  "moonsaas/moon-resend" @resend,
+  "moonbitstack/moonfetch",
+}
+
+import {
+  "moonbitlang/async",
+} for "test"

@@ -1,0 +1,17 @@
+import {
+  "moonsaas/moon-resend" @resend,
+  "moonsaas/moon-resend/adapter",
+  "moonbitlang/async",
+  "moonbitlang/core/env",
+}
+
+pkgtype(kind: "executable")
+
+options(
+  targets: {
+    "main.mbt": [ "native", "wasm" ],
+    "elsewhere.mbt": [ "js", "wasm-gc" ],
+  },
+)
+
+warnings = "-29"
