@@ -25,6 +25,8 @@ returns an EmailId, and the live example prints sent: followed by that id.
 - [项目申报书](APPLICATION.md)
 - [中文比赛展示说明](docs/COMPETITION_ZH.md)
 - [11 月评审清单](docs/NOVEMBER_REVIEW.md)
+- [11 月覆盖率审计](docs/COVERAGE_NOVEMBER.md)
+- [可选真实发信证据清单](docs/LIVE_EVIDENCE.md)
 - [架构说明](docs/ARCHITECTURE.md)
 - [公开 API 索引](docs/API.md)
 - [阶段规划](MILESTONES.md)

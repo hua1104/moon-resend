@@ -21,5 +21,6 @@ milestones.
 - Mooncakes package page or successful moon add output.
 - CI run for the submitted commit or tag.
 - Offline test summary.
+- Coverage audit: 98.1% for the core package and 77.0% for the whole module.
 - Optional live-delivery output and received-email screenshot, with API keys,
   private addresses and unrelated content redacted.
