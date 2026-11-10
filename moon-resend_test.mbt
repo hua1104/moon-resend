@@ -229,3 +229,195 @@ test "ResendError message is useful for applications" {
     "transport failure: timeout",
   )
 }
+
+///|
+test "reject blank optional addresses and tags" {
+  let client = @moon-resend.Client::new("re_test").unwrap()
+  for
+    email in [
+      @moon-resend.SendEmailParams::new(
+        "from@example.com",
+        ["to@example.com"],
+        "subject",
+        text="hello",
+        cc=["  "],
+      ),
+      @moon-resend.SendEmailParams::new(
+        "from@example.com",
+        ["to@example.com"],
+        "subject",
+        text="hello",
+        bcc=["  "],
+      ),
+      @moon-resend.SendEmailParams::new(
+        "from@example.com",
+        ["to@example.com"],
+        "subject",
+        text="hello",
+        reply_to=["  "],
+      ),
+      @moon-resend.SendEmailParams::new(
+        "from@example.com",
+        ["to@example.com"],
+        "subject",
+        text="hello",
+        tags=[("", "value")],
+      ),
+      @moon-resend.SendEmailParams::new(
+        "from@example.com",
+        ["to@example.com"],
+        "subject",
+        text="hello",
+        tags=[("name", "  ")],
+      ),
+    ] {
+    assert_true(client.send_request(email) is Err(InvalidInput(_)))
+  }
+}
+
+///|
+test "enforce batch boundaries at one, one hundred and one" {
+  let client = @moon-resend.Client::new("re_test").unwrap()
+  assert_true(client.batch_send_request([sample_email()]) is Ok(_))
+  assert_true(
+    client.batch_send_request(Array::make(100, sample_email())) is Ok(_),
+  )
+  assert_true(
+    client.batch_send_request(Array::make(101, sample_email()))
+    is Err(InvalidInput(_)),
+  )
+}
+
+///|
+test "reject malformed typed success payloads" {
+  let client = @moon-resend.Client::new("re_test").unwrap()
+  for body in ["{}", "{\"id\":1}", "{\"data\":[{}]}"] {
+    assert_true(
+      client.parse_id_response(@moon-resend.HttpResponse::new(200, body))
+      is Err(InvalidResponse(_)),
+    )
+    assert_true(
+      client.parse_batch_response(@moon-resend.HttpResponse::new(200, body))
+      is Err(InvalidResponse(_)),
+    )
+  }
+}
+
+///|
+test "preserve non-JSON API error bodies" {
+  let client = @moon-resend.Client::new("re_test").unwrap()
+  let failed = client.parse_id_response(
+    @moon-resend.HttpResponse::new(503, "upstream unavailable"),
+  )
+  guard failed is Err(Api(error)) else { fail("expected API error") }
+  assert_eq(error.status(), 503)
+  assert_eq(error.name(), "api_error")
+  assert_eq(error.message(), "upstream unavailable")
+  assert_eq(error.raw_body(), "upstream unavailable")
+}
+
+///|
+test "reject invalid client, sender, recipient and attachment inputs" {
+  assert_true(@moon-resend.Client::new("  ") is Err(InvalidInput(_)))
+  assert_true(
+    @moon-resend.Client::new("re_test", base_url="  ") is Err(InvalidInput(_)),
+  )
+  let client = @moon-resend.Client::new("re_test").unwrap()
+  for
+    email in [
+      @moon-resend.SendEmailParams::new(
+        "  ",
+        ["to@example.com"],
+        "subject",
+        text="hello",
+      ),
+      @moon-resend.SendEmailParams::new(
+        "from@example.com",
+        ["  "],
+        "subject",
+        text="hello",
+      ),
+      @moon-resend.SendEmailParams::new(
+        "from@example.com",
+        ["to@example.com"],
+        "subject",
+        text="hello",
+        attachments=[@moon-resend.Attachment::new("YQ==", "  ")],
+      ),
+      @moon-resend.SendEmailParams::new(
+        "from@example.com",
+        ["to@example.com"],
+        "subject",
+        text="hello",
+        attachments=[@moon-resend.Attachment::new("", "a.txt")],
+      ),
+    ] {
+    assert_true(client.send_request(email) is Err(InvalidInput(_)))
+  }
+  let invalid = @moon-resend.SendEmailParams::new(
+    "from@example.com",
+    [],
+    "subject",
+    text="hello",
+  )
+  assert_true(client.batch_send_request([invalid]) is Err(InvalidInput(_)))
+  assert_true(
+    client.batch_send_request([sample_email()], idempotency_key="  ")
+    is Err(InvalidInput(_)),
+  )
+  assert_true(
+    client.update_request("  ", @moon-resend.UpdateEmailParams::new("tomorrow"))
+    is Err(InvalidInput(_)),
+  )
+}
+
+///|
+test "exercise response accessors and detailed error messages" {
+  let response = @moon-resend.HttpResponse::new(202, "accepted", headers=[
+    ("x-request-id", "req_1"),
+  ])
+  assert_eq(response.status(), 202)
+  assert_eq(response.body(), "accepted")
+  assert_eq(response.headers(), [("x-request-id", "req_1")])
+  let client = @moon-resend.Client::new("re_test").unwrap()
+  let failed = client.parse_id_response(
+    @moon-resend.HttpResponse::new(
+      422, "{\"name\":\"bad\",\"message\":\"nope\"}",
+    ),
+  )
+  guard failed is Err(error) else { fail("expected error") }
+  assert_eq(error.message(), "Resend API error 422 (bad): nope")
+}
+
+///|
+test "cover malformed batch and retrieve response variants" {
+  let client = @moon-resend.Client::new("re_test").unwrap()
+  for body in ["not-json", "[]", "{\"data\":[{\"id\":1}]}"] {
+    assert_true(
+      client.parse_batch_response(@moon-resend.HttpResponse::new(200, body))
+      is Err(InvalidResponse(_)),
+    )
+  }
+  for
+    body in [
+      "not-json", "{}", "{\"id\":\"e\",\"from\":\"f\",\"to\":[1],\"subject\":\"s\",\"created_at\":\"t\"}",
+      "{\"id\":\"e\",\"from\":\"f\",\"to\":[\"t\"]}",
+    ] {
+    assert_true(
+      client.parse_retrieve_response(@moon-resend.HttpResponse::new(200, body))
+      is Err(InvalidResponse(_)),
+    )
+  }
+  assert_true(
+    client.parse_batch_response(
+      @moon-resend.HttpResponse::new(500, "batch failed"),
+    )
+    is Err(Api(_)),
+  )
+  assert_true(
+    client.parse_retrieve_response(
+      @moon-resend.HttpResponse::new(500, "get failed"),
+    )
+    is Err(Api(_)),
+  )
+}

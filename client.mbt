@@ -84,6 +84,18 @@ fn validate_email(params : SendEmailParams) -> Result[Unit, ResendError] {
       return Err(InvalidInput("recipients must not be empty"))
     }
   }
+  for
+    (label, addresses) in [
+      ("cc", params.cc),
+      ("bcc", params.bcc),
+      ("reply_to", params.reply_to),
+    ] {
+    for address in addresses {
+      if address.trim().is_empty() {
+        return Err(InvalidInput(label + " addresses must not be empty"))
+      }
+    }
+  }
   if params.subject.trim().is_empty() {
     return Err(InvalidInput("subject must not be empty"))
   }
@@ -107,6 +119,14 @@ fn validate_email(params : SendEmailParams) -> Result[Unit, ResendError] {
     }
     if attachment.content.is_empty() {
       return Err(InvalidInput("attachment content must not be empty"))
+    }
+  }
+  for tag in params.tags {
+    if tag.0.trim().is_empty() {
+      return Err(InvalidInput("tag name must not be empty"))
+    }
+    if tag.1.trim().is_empty() {
+      return Err(InvalidInput("tag value must not be empty"))
     }
   }
   Ok(())
