@@ -82,6 +82,7 @@ pub enum ResendError {
   Transport(String)
 }
 pub fn ResendError::invalid_input(String) -> Self
+pub fn ResendError::message(Self) -> String
 pub fn ResendError::transport(String) -> Self
 
 pub struct RetrievedEmail {
@@ -98,13 +99,18 @@ pub struct RetrievedEmail {
   last_event : String?
   scheduled_at : String?
 }
+pub fn RetrievedEmail::bcc(Self) -> Array[String]
+pub fn RetrievedEmail::cc(Self) -> Array[String]
 pub fn RetrievedEmail::created_at(Self) -> String
+pub fn RetrievedEmail::html(Self) -> String?
 pub fn RetrievedEmail::id(Self) -> String
 pub fn RetrievedEmail::last_event(Self) -> String?
 pub fn RetrievedEmail::recipients(Self) -> Array[String]
+pub fn RetrievedEmail::reply_to(Self) -> Array[String]
 pub fn RetrievedEmail::scheduled_at(Self) -> String?
 pub fn RetrievedEmail::sender(Self) -> String
 pub fn RetrievedEmail::subject(Self) -> String
+pub fn RetrievedEmail::text(Self) -> String?
 
 pub struct SendEmailParams {
   from : String

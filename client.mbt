@@ -27,17 +27,27 @@ pub fn Client::new(
 fn Client::headers(
   self : Client,
   idempotency_key? : String,
-) -> Array[(String, String)] {
+) -> Result[Array[(String, String)], ResendError] {
   let headers = [
     ("Authorization", "Bearer " + self.api_key),
     ("Content-Type", "application/json"),
     ("User-Agent", "moon-resend/0.1.0"),
   ]
   match idempotency_key {
-    Some(value) if !value.is_empty() => headers.push(("Idempotency-Key", value))
-    _ => ()
+    Some(value) => {
+      if value.trim().is_empty() {
+        return Err(InvalidInput("idempotency key must not be empty"))
+      }
+      if value.length() > 256 {
+        return Err(
+          InvalidInput("idempotency key must not exceed 256 characters"),
+        )
+      }
+      headers.push(("Idempotency-Key", value))
+    }
+    None => ()
   }
-  headers
+  Ok(headers)
 }
 
 ///|
@@ -53,7 +63,10 @@ pub fn Client::send_request(
   Ok({
     verb: "POST",
     url: self.base_url + "/emails",
-    headers: self.headers(idempotency_key?),
+    headers: match self.headers(idempotency_key?) {
+      Ok(value) => value
+      Err(error) => return Err(error)
+    },
     body: Some(params.json_string()),
   })
 }
@@ -76,6 +89,17 @@ fn validate_email(params : SendEmailParams) -> Result[Unit, ResendError] {
   }
   if params.html is None && params.text is None {
     return Err(InvalidInput("either html or text content is required"))
+  }
+  let has_html = match params.html {
+    Some(value) => !value.trim().is_empty()
+    None => false
+  }
+  let has_text = match params.text {
+    Some(value) => !value.trim().is_empty()
+    None => false
+  }
+  if !has_html && !has_text {
+    return Err(InvalidInput("email content must not be empty"))
   }
   for attachment in params.attachments {
     if attachment.filename.trim().is_empty() {
@@ -111,7 +135,10 @@ pub fn Client::batch_send_request(
   Ok({
     verb: "POST",
     url: self.base_url + "/emails/batch",
-    headers: self.headers(idempotency_key?),
+    headers: match self.headers(idempotency_key?) {
+      Ok(value) => value
+      Err(error) => return Err(error)
+    },
     body: Some(body),
   })
 }
@@ -127,7 +154,7 @@ pub fn Client::retrieve_request(
   Ok({
     verb: "GET",
     url: self.base_url + "/emails/" + id,
-    headers: self.headers(),
+    headers: self.headers().unwrap(),
     body: None,
   })
 }
@@ -148,7 +175,7 @@ pub fn Client::update_request(
   Ok({
     verb: "PATCH",
     url: self.base_url + "/emails/" + id,
-    headers: self.headers(),
+    headers: self.headers().unwrap(),
     body: Some(params.json_string()),
   })
 }
@@ -164,7 +191,7 @@ pub fn Client::cancel_request(
   Ok({
     verb: "POST",
     url: self.base_url + "/emails/" + id + "/cancel",
-    headers: self.headers(),
+    headers: self.headers().unwrap(),
     body: None,
   })
 }

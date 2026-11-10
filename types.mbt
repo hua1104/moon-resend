@@ -212,6 +212,31 @@ pub fn RetrievedEmail::scheduled_at(self : RetrievedEmail) -> String? {
 }
 
 ///|
+pub fn RetrievedEmail::html(self : RetrievedEmail) -> String? {
+  self.html
+}
+
+///|
+pub fn RetrievedEmail::text(self : RetrievedEmail) -> String? {
+  self.text
+}
+
+///|
+pub fn RetrievedEmail::cc(self : RetrievedEmail) -> Array[String] {
+  self.cc.copy()
+}
+
+///|
+pub fn RetrievedEmail::bcc(self : RetrievedEmail) -> Array[String] {
+  self.bcc.copy()
+}
+
+///|
+pub fn RetrievedEmail::reply_to(self : RetrievedEmail) -> Array[String] {
+  self.reply_to.copy()
+}
+
+///|
 pub fn BatchEmailIds::data(self : BatchEmailIds) -> Array[EmailId] {
   self.data.copy()
 }
@@ -267,4 +292,21 @@ pub fn ResendError::invalid_input(message : String) -> ResendError {
 /// Create a network, TLS or timeout error from a transport adapter.
 pub fn ResendError::transport(message : String) -> ResendError {
   Transport(message)
+}
+
+///|
+/// A concise description suitable for application logs.
+pub fn ResendError::message(self : ResendError) -> String {
+  match self {
+    InvalidInput(message) => "invalid input: " + message
+    Api(error) =>
+      "Resend API error " +
+      error.status().to_string() +
+      " (" +
+      error.name() +
+      "): " +
+      error.message()
+    InvalidResponse(message) => "invalid Resend response: " + message
+    Transport(message) => "transport failure: " + message
+  }
 }

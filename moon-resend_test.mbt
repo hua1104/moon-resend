@@ -176,3 +176,56 @@ test "reject blank lifecycle parameters and malformed retrieve payloads" {
     is Err(InvalidResponse(_)),
   )
 }
+
+///|
+test "reject empty content and invalid idempotency keys" {
+  let client = @moon-resend.Client::new("re_test").unwrap()
+  let blank_content = @moon-resend.SendEmailParams::new(
+    "from@example.com",
+    ["to@example.com"],
+    "subject",
+    html="  ",
+  )
+  assert_true(client.send_request(blank_content) is Err(InvalidInput(_)))
+  assert_true(
+    client.send_request(sample_email(), idempotency_key="  ")
+    is Err(InvalidInput(_)),
+  )
+  let long_key = "x".repeat(257)
+  assert_true(
+    client.send_request(sample_email(), idempotency_key=long_key)
+    is Err(InvalidInput(_)),
+  )
+}
+
+///|
+test "retrieved email exposes optional content and defensive copies" {
+  let client = @moon-resend.Client::new("re_test").unwrap()
+  let retrieved = client
+    .parse_retrieve_response(
+      @moon-resend.HttpResponse::new(
+        200, "{\"id\":\"email_2\",\"from\":\"from@example.com\",\"to\":[\"to@example.com\"],\"subject\":\"Hello\",\"created_at\":\"2026-11-10T08:00:00Z\",\"html\":\"<b>Hello</b>\",\"text\":\"Hello\",\"cc\":[\"cc@example.com\"],\"bcc\":[\"bcc@example.com\"],\"reply_to\":[\"reply@example.com\"]}",
+      ),
+    )
+    .unwrap()
+  assert_eq(retrieved.html(), Some("<b>Hello</b>"))
+  assert_eq(retrieved.text(), Some("Hello"))
+  assert_eq(retrieved.cc(), ["cc@example.com"])
+  assert_eq(retrieved.bcc(), ["bcc@example.com"])
+  assert_eq(retrieved.reply_to(), ["reply@example.com"])
+  let recipients = retrieved.recipients()
+  recipients.push("mutated@example.com")
+  assert_eq(retrieved.recipients(), ["to@example.com"])
+}
+
+///|
+test "ResendError message is useful for applications" {
+  assert_eq(
+    @moon-resend.ResendError::invalid_input("bad recipient").message(),
+    "invalid input: bad recipient",
+  )
+  assert_eq(
+    @moon-resend.ResendError::transport("timeout").message(),
+    "transport failure: timeout",
+  )
+}

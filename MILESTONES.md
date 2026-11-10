@@ -11,6 +11,7 @@ Estimated effort: 3–5 focused development days.
 - typed success/error/retrieval parsing;
 - input validation, deterministic tests and a runnable request-building example;
 - transport-neutral design so users can choose their MoonBit HTTP runtime.
+- release notes, security guidance, contribution rules and a public API index.
 
 Acceptance: `moon check`, `moon test`, `moon info`, formatting and the offline example pass without warnings. The live example compiles and performs direct delivery only when the operator explicitly supplies Resend credentials.
 

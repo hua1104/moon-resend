@@ -7,7 +7,11 @@
 - [项目申报书](APPLICATION.md)
 - [中文比赛展示说明](docs/COMPETITION_ZH.md)
 - [架构说明](docs/ARCHITECTURE.md)
+- [公开 API 索引](docs/API.md)
 - [阶段规划](MILESTONES.md)
+- [更新记录](CHANGELOG.md)
+- [安全说明](SECURITY.md)
+- [贡献指南](CONTRIBUTING.md)
 
 The first milestone intentionally focuses on a reliable transactional-email loop:
 
