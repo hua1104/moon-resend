@@ -12,14 +12,14 @@ Estimated effort: 3–5 focused development days.
 - input validation, deterministic tests and a runnable request-building example;
 - transport-neutral design so users can choose their MoonBit HTTP runtime.
 
-Acceptance: `moon check`, `moon test`, `moon info`, the example, and formatting all pass without warnings. No claim of direct network delivery is made in this milestone.
+Acceptance: `moon check`, `moon test`, `moon info`, formatting and the offline example pass without warnings. The live example compiles and performs direct delivery only when the operator explicitly supplies Resend credentials.
 
-## December — executable integration
+## December — integration hardening and webhooks
 
 Estimated effort: 4–6 focused development days.
 
-- one supported asynchronous HTTP adapter;
-- one-call send/retrieve/update/cancel helpers built on that adapter;
+- harden the moonfetch adapter delivered early in November;
+- expand integration coverage with a local mock server;
 - mock-server integration tests for headers, bodies, failures and timeouts;
 - webhook signature verification with documented replay protection.
 

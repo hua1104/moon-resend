@@ -1,6 +1,8 @@
 # moon-resend
 
-A small, typed, transport-neutral MoonBit SDK for the Resend Email API.
+A small, typed MoonBit SDK for the Resend Email API, with a transport-neutral core and an official moonfetch adapter.
+
+[![CI](https://github.com/hua1104/moon-resend/actions/workflows/ci.yml/badge.svg)](https://github.com/hua1104/moon-resend/actions/workflows/ci.yml)
 
 The first milestone intentionally focuses on a reliable transactional-email loop:
 
@@ -11,7 +13,7 @@ The first milestone intentionally focuses on a reliable transactional-email loop
 - typed parsing of retrieved email metadata and delivery state;
 - batch sending for up to 100 messages;
 - typed success and API error parsing;
-- no hard dependency on one HTTP runtime.
+- an optional real HTTPS adapter powered by moonfetch.
 
 ## Quick start
 
@@ -34,18 +36,55 @@ let request = client
   .unwrap()
 ~~~
 
-HttpRequest is deliberately transport-neutral. An adapter sends it with the application's chosen HTTP client and passes the result back as HttpResponse. This makes request construction and error behavior deterministic in tests. A ready-to-use async HTTP adapter is the next milestone.
+HttpRequest is deliberately transport-neutral. This keeps request construction and error behavior deterministic while the optional adapter provides real network I/O.
+
+## Send over HTTPS
+
+The `moonsaas/moon-resend/adapter` package provides the supported moonfetch integration:
+
+~~~moonbit nocheck
+///|
+async fn send_welcome(api_key : String) -> Unit {
+  let client = @resend.Client::new(api_key).unwrap()
+  let email = @resend.SendEmailParams::new(
+    "Acme <onboarding@example.com>",
+    ["user@example.com"],
+    "Welcome",
+    html="<strong>It works!</strong>",
+    text="It works!",
+  )
+  match @adapter.send(client, email, idempotency_key="welcome-user-42") {
+    Ok(sent) => println("sent: " + sent.id())
+    Err(_) => println("send failed")
+  }
+}
+~~~
+
+The adapter also exposes `send_batch`, `retrieve`, `update`, `cancel`, and low-level `execute`. It disables redirects to protect the authorization header and converts network, TLS and timeout failures to `ResendError::Transport`.
+
+### Run the live example
+
+Use a Resend API key, a sender on your verified domain, and a recipient you control. The values stay in environment variables and are never committed:
+
+~~~powershell
+$env:RESEND_API_KEY = "re_..."
+$env:RESEND_FROM = "Demo <demo@your-verified-domain.example>"
+$env:RESEND_TO = "you@example.com"
+moon run cmd/send-live --target native
+~~~
+
+The regular test suite never sends an email and requires no secret.
 
 ## Deliberate scope
 
 This is not advertised as a complete Resend API implementation. The November milestone prioritizes send, batch send, retrieve, reschedule, cancel, validation, errors, tests and one reproducible example. Webhook verification, domains, contacts and broadcasts remain roadmap items until the core loop is stable.
 
-See [MILESTONES.md](MILESTONES.md) for the deliberately split delivery plan and acceptance criteria.
+See [MILESTONES.md](MILESTONES.md) for the delivery plan, [architecture](docs/ARCHITECTURE.md) for the package boundary, and [competition showcase](docs/COMPETITION.md) for the coverage matrix and demo script.
 
 ## Competition roadmap
 
 - **November:** stabilize the typed request/response core and publish an auditable MVP.
-- **December:** add one production HTTP adapter, integration tests against a mock server, and webhook signature verification.
+- **December:** harden the moonfetch adapter, add mock-server integration tests, and implement webhook signature verification.
 - **January:** add domains/contacts APIs, examples, API reference docs and Mooncakes packaging.
 
 The milestones are deliberately usable on their own. Later competition entries extend the SDK with new capabilities instead of submitting the same work split across repositories.
@@ -58,6 +97,8 @@ moon test
 moon info
 moon fmt
 ~~~
+
+The live adapter example also compiles in CI on the native target. On Windows, native builds require MSVC Build Tools with the C++ workload and Windows SDK; the default wasm checks do not.
 
 ## License
 
