@@ -11,7 +11,7 @@
 
 name = "hua1104/moon-resend"
 
-version = "0.1.0"
+version = "0.2.0"
 
 readme = "README.mbt.md"
 
@@ -28,4 +28,5 @@ description = "A typed MoonBit SDK for Resend with a moonfetch HTTP adapter"
 import {
   "moonbitlang/async@0.22.5",
   "moonbitstack/moonfetch@0.1.8",
+  "moonbitstack/mooncrypt@0.4.14",
 }

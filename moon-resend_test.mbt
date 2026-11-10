@@ -229,3 +229,61 @@ test "ResendError message is useful for applications" {
     "transport failure: timeout",
   )
 }
+
+///|
+test "verify a Resend webhook signature and return replay metadata" {
+  let verifier = @moon-resend.WebhookVerifier::new("whsec_dGVzdHNlY3JldA==").unwrap()
+  let payload = "{\"type\":\"email.delivered\",\"data\":{\"email_id\":\"email_123\"}}"
+  let verified = verifier
+    .verify(
+      payload, "msg_123", "1700000000", "v1,fHunPtzYjXhrwoRtqAAdublxE296fKn6+AZSrd1uRuE=",
+      1700000000L,
+    )
+    .unwrap()
+  assert_eq(verified.id(), "msg_123")
+  assert_eq(verified.timestamp(), 1700000000L)
+}
+
+///|
+test "accept one valid signature during key rotation" {
+  let verifier = @moon-resend.WebhookVerifier::new("whsec_dGVzdHNlY3JldA==").unwrap()
+  let payload = "{\"type\":\"email.delivered\",\"data\":{\"email_id\":\"email_123\"}}"
+  assert_true(
+    verifier.verify(
+      payload, "msg_123", "1700000000", "v1,invalid v1,fHunPtzYjXhrwoRtqAAdublxE296fKn6+AZSrd1uRuE=",
+      1700000001L,
+    )
+    is Ok(_),
+  )
+}
+
+///|
+test "reject invalid, stale and malformed webhook inputs" {
+  assert_true(
+    @moon-resend.WebhookVerifier::new("bad-secret") is Err(InvalidSecret(_)),
+  )
+  let verifier = @moon-resend.WebhookVerifier::new("whsec_dGVzdHNlY3JldA==").unwrap()
+  assert_true(
+    verifier.verify("{}", "msg_123", "1700000000", "v1,bad", 1700000000L)
+    is Err(InvalidSignature),
+  )
+  assert_true(
+    verifier.verify("{}", "msg_123", "1700000000", "v1,bad", 1700000301L)
+    is Err(TimestampOutsideTolerance),
+  )
+  assert_true(
+    verifier.verify("{}", "msg_123", "not-time", "v1,bad", 1700000000L)
+    is Err(InvalidTimestamp(_)),
+  )
+  assert_true(
+    verifier.verify(
+      "{}",
+      "msg_123",
+      "1700000000",
+      "v1,bad",
+      1700000000L,
+      tolerance=-1L,
+    )
+    is Err(InvalidTimestamp(_)),
+  )
+}

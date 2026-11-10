@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.2.0 — Unreleased
+
+### Added
+
+- Resend/Svix webhook signature verification with timestamp freshness checks.
+- Verified event metadata for application-level duplicate detection.
+
 ## 0.1.0 — 2026-11-10
 
 ### Added

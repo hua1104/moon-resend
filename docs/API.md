@@ -16,6 +16,16 @@
 
 ResendError distinguishes invalid input, API errors, malformed success responses and transport failures. Its message method provides a concise application-facing description.
 
+## Webhook verification
+
+- WebhookVerifier::new(secret) decodes the Resend whsec_ signing secret.
+- WebhookVerifier::verify(...) validates the raw body with HMAC-SHA256,
+  accepts rotated v1 signatures, and enforces a five-minute timestamp window.
+- Successful verification returns VerifiedWebhook. Persist its id() in
+  application storage and reject duplicates to complete replay protection.
+- Always pass the request body exactly as received; parsing and re-serializing JSON
+  before verification changes the signed bytes.
+
 ## Adapter package
 
 The adapter package exposes send, send_batch, retrieve, update, cancel and low-level execute. All functions accept an optional timeout in milliseconds. Redirects are disabled deliberately.

@@ -134,6 +134,28 @@ pub struct UpdateEmailParams {
 }
 pub fn UpdateEmailParams::new(String) -> Self
 
+pub struct VerifiedWebhook {
+  id : String
+  timestamp : Int64
+}
+pub fn VerifiedWebhook::id(Self) -> String
+pub fn VerifiedWebhook::timestamp(Self) -> Int64
+
+pub enum WebhookError {
+  InvalidSecret(String)
+  InvalidHeader(String)
+  InvalidTimestamp(String)
+  TimestampOutsideTolerance
+  InvalidSignature
+}
+pub fn WebhookError::message(Self) -> String
+
+pub struct WebhookVerifier {
+  key : Bytes
+}
+pub fn WebhookVerifier::new(String) -> Result[Self, WebhookError]
+pub fn WebhookVerifier::verify(Self, String, String, String, String, Int64, tolerance? : Int64) -> Result[VerifiedWebhook, WebhookError]
+
 // Type aliases
 
 // Traits

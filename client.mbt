@@ -31,7 +31,7 @@ fn Client::headers(
   let headers = [
     ("Authorization", "Bearer " + self.api_key),
     ("Content-Type", "application/json"),
-    ("User-Agent", "moon-resend/0.1.0"),
+    ("User-Agent", "moon-resend/0.2.0"),
   ]
   match idempotency_key {
     Some(value) => {

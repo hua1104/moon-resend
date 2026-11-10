@@ -86,7 +86,23 @@ The regular test suite never sends an email and requires no secret.
 
 ## Deliberate scope
 
-This is not advertised as a complete Resend API implementation. The November milestone prioritizes send, batch send, retrieve, reschedule, cancel, validation, errors, tests and one reproducible example. Webhook verification, domains, contacts and broadcasts remain roadmap items until the core loop is stable.
+This is not advertised as a complete Resend API implementation. The November milestone prioritizes send, batch send, retrieve, reschedule, cancel, validation, errors, tests and one reproducible example. Domains, contacts and broadcasts remain roadmap items until the core loop is stable.
+
+Webhook signature verification is now available as an early December capability.
+It validates the raw request body, Svix headers and timestamp window. Applications
+should store the returned verified event id and reject duplicates for full replay
+protection; see [the API guide](docs/API.md#webhook-verification).
+
+~~~moonbit nocheck
+///|
+let verifier = WebhookVerifier::new("whsec_...").unwrap()
+
+///|
+let verified = verifier
+  .verify(raw_body, svix_id, svix_timestamp, svix_signature, unix_time_seconds)
+  .unwrap()
+// Persist verified.id() and reject it if it has already been processed.
+~~~
 
 See [MILESTONES.md](MILESTONES.md) for the delivery plan, [architecture](docs/ARCHITECTURE.md) for the package boundary, and [competition showcase](docs/COMPETITION.md) for the coverage matrix and demo script.
 

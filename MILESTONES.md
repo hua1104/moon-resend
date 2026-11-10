@@ -22,7 +22,8 @@ Estimated effort: 4–6 focused development days.
 - harden the moonfetch adapter delivered early in November;
 - expand integration coverage with a local mock server;
 - mock-server integration tests for headers, bodies, failures and timeouts;
-- webhook signature verification with documented replay protection.
+- webhook signature verification with documented replay protection (implemented
+  early for 0.2.0; duplicate event ids remain application storage policy).
 
 Acceptance: a user can send an email with an API key using the documented adapter, and CI verifies the integration without contacting Resend.
 
