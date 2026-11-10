@@ -1,0 +1,124 @@
+// Generated using `moon info`, DON'T EDIT IT
+package "moonsaas/moon-resend"
+
+// Values
+
+// Errors
+
+// Types and methods
+pub struct ApiError {
+  status : Int
+  name : String
+  message : String
+  raw_body : String
+}
+pub fn ApiError::message(Self) -> String
+pub fn ApiError::name(Self) -> String
+pub fn ApiError::status(Self) -> Int
+
+pub struct Attachment {
+  content : String
+  filename : String
+  content_type : String?
+  content_id : String?
+}
+pub fn Attachment::new(String, String, content_type? : String, content_id? : String) -> Self
+
+pub struct BatchEmailIds {
+  data : Array[EmailId]
+}
+pub fn BatchEmailIds::data(Self) -> Array[EmailId]
+
+pub struct Client {
+  api_key : String
+  base_url : String
+}
+pub fn Client::batch_send_request(Self, Array[SendEmailParams], idempotency_key? : String) -> Result[HttpRequest, ResendError]
+pub fn Client::cancel_request(Self, String) -> Result[HttpRequest, ResendError]
+pub fn Client::new(String, base_url? : String) -> Result[Self, ResendError]
+pub fn Client::parse_batch_response(Self, HttpResponse) -> Result[BatchEmailIds, ResendError]
+pub fn Client::parse_id_response(Self, HttpResponse) -> Result[EmailId, ResendError]
+pub fn Client::parse_retrieve_response(Self, HttpResponse) -> Result[RetrievedEmail, ResendError]
+pub fn Client::retrieve_request(Self, String) -> Result[HttpRequest, ResendError]
+pub fn Client::send_request(Self, SendEmailParams, idempotency_key? : String) -> Result[HttpRequest, ResendError]
+pub fn Client::update_request(Self, String, UpdateEmailParams) -> Result[HttpRequest, ResendError]
+
+pub struct EmailId {
+  id : String
+}
+pub fn EmailId::id(Self) -> String
+
+pub struct HttpRequest {
+  verb : String
+  url : String
+  headers : Array[(String, String)]
+  body : String?
+}
+pub fn HttpRequest::body(Self) -> String?
+pub fn HttpRequest::headers(Self) -> Array[(String, String)]
+pub fn HttpRequest::url(Self) -> String
+pub fn HttpRequest::verb(Self) -> String
+
+pub struct HttpResponse {
+  status : Int
+  headers : Array[(String, String)]
+  body : String
+}
+pub fn HttpResponse::body(Self) -> String
+pub fn HttpResponse::headers(Self) -> Array[(String, String)]
+pub fn HttpResponse::new(Int, String, headers? : Array[(String, String)]) -> Self
+pub fn HttpResponse::status(Self) -> Int
+
+pub enum ResendError {
+  InvalidInput(String)
+  Api(ApiError)
+  InvalidResponse(String)
+}
+
+pub struct RetrievedEmail {
+  id : String
+  from : String
+  to : Array[String]
+  subject : String
+  created_at : String
+  html : String?
+  text : String?
+  cc : Array[String]
+  bcc : Array[String]
+  reply_to : Array[String]
+  last_event : String?
+  scheduled_at : String?
+}
+pub fn RetrievedEmail::created_at(Self) -> String
+pub fn RetrievedEmail::id(Self) -> String
+pub fn RetrievedEmail::last_event(Self) -> String?
+pub fn RetrievedEmail::recipients(Self) -> Array[String]
+pub fn RetrievedEmail::scheduled_at(Self) -> String?
+pub fn RetrievedEmail::sender(Self) -> String
+pub fn RetrievedEmail::subject(Self) -> String
+
+pub struct SendEmailParams {
+  from : String
+  to : Array[String]
+  subject : String
+  html : String?
+  text : String?
+  cc : Array[String]
+  bcc : Array[String]
+  reply_to : Array[String]
+  attachments : Array[Attachment]
+  tags : Array[(String, String)]
+  scheduled_at : String?
+}
+pub fn SendEmailParams::json_string(Self) -> String
+pub fn SendEmailParams::new(String, Array[String], String, html? : String, text? : String, cc? : Array[String], bcc? : Array[String], reply_to? : Array[String], attachments? : Array[Attachment], tags? : Array[(String, String)], scheduled_at? : String) -> Self
+pub fn SendEmailParams::to_json(Self) -> Json
+
+pub struct UpdateEmailParams {
+  scheduled_at : String
+}
+pub fn UpdateEmailParams::new(String) -> Self
+
+// Type aliases
+
+// Traits
