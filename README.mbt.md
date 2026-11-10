@@ -4,8 +4,27 @@
 
 [![CI](https://github.com/hua1104/moon-resend/actions/workflows/ci.yml/badge.svg)](https://github.com/hua1104/moon-resend/actions/workflows/ci.yml)
 
+## 3-minute review path
+
+Install the published November release with moon add hua1104/moon-resend@0.1.0.
+The immutable judging snapshot is v0.1.0; later main-branch commits belong to
+later milestones and are not required to evaluate the November submission.
+
+Reproduce the release without a Resend key:
+
+~~~sh
+moon update
+moon check
+moon test
+moon build cmd/send-live --target native
+~~~
+
+The request builder performs no network access. The supported adapter below
+returns an EmailId, and the live example prints sent: followed by that id.
+
 - [项目申报书](APPLICATION.md)
 - [中文比赛展示说明](docs/COMPETITION_ZH.md)
+- [11 月评审清单](docs/NOVEMBER_REVIEW.md)
 - [架构说明](docs/ARCHITECTURE.md)
 - [公开 API 索引](docs/API.md)
 - [阶段规划](MILESTONES.md)
@@ -108,6 +127,18 @@ moon fmt
 ~~~
 
 The live adapter example also compiles in CI on the native target. On Windows, native builds require MSVC Build Tools with the C++ workload and Windows SDK; the default wasm checks do not.
+
+### Compatibility matrix
+
+| Surface | Wasm | JavaScript | Native |
+| --- | --- | --- | --- |
+| Typed core and offline tests | Supported | Supported | Supported |
+| moonfetch adapter | Supported | Supported | Supported |
+| Live CLI example | — | — | Supported |
+
+The November release was checked with MoonBit toolchains dated 2026-10-29 and
+2026-11-04. Normal tests use no API key and make no Resend request. Only the
+live command requires RESEND_API_KEY, RESEND_FROM, and RESEND_TO.
 
 ## License
 

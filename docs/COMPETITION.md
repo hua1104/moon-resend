@@ -1,5 +1,7 @@
 # Competition showcase
 
+> November judging snapshot: v0.1.0. Webhook and integration-test work on later commits belongs to later milestones.
+
 ## Problem
 
 MoonBit applications need transactional email, but application authors should not have to hand-build Resend JSON, authentication, idempotency and error handling for every project.

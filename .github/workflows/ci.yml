@@ -28,6 +28,9 @@ jobs:
       - name: Test wasm
         run: moon test
 
+      - name: Coverage audit
+        run: moon coverage analyze
+
       - name: Test native adapter
         run: moon test --target native
 

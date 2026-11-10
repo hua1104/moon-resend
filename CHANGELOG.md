@@ -1,5 +1,11 @@
 # Changelog
 
+## November polish — unreleased
+
+- Added stricter validation for optional addresses and tags.
+- Added batch-boundary and malformed-response regression tests.
+- Added a three-minute judging path, compatibility matrix and evidence checklist.
+
 ## 0.1.0 — 2026-11-10
 
 ### Added
