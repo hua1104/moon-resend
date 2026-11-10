@@ -1,8 +1,13 @@
 # moon-resend
 
-A small, typed MoonBit SDK for the Resend Email API, with a transport-neutral core and an official moonfetch adapter.
+面向 Resend 邮件平台的类型化 MoonBit SDK，提供 transport-neutral 核心和基于 moonfetch 的真实 HTTPS adapter，适用于 MoonBit Web 应用、SaaS 服务、后台任务和自动化工具。
 
 [![CI](https://github.com/hua1104/moon-resend/actions/workflows/ci.yml/badge.svg)](https://github.com/hua1104/moon-resend/actions/workflows/ci.yml)
+
+- [项目申报书](APPLICATION.md)
+- [中文比赛展示说明](docs/COMPETITION_ZH.md)
+- [架构说明](docs/ARCHITECTURE.md)
+- [阶段规划](MILESTONES.md)
 
 The first milestone intentionally focuses on a reliable transactional-email loop:
 
