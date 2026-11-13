@@ -13,3 +13,7 @@ The normal test suite does not require credentials and does not contact Resend. 
 Webhook consumers must verify the raw body before parsing and persist event IDs
 to prevent duplicate delivery. The in-memory replay guard is for examples and
 single-process services; distributed services need a durable atomic store.
+The memory store fails closed at capacity and expires IDs after its configured
+TTL; restart loses all claims. A successful claim does not prove a side effect
+completed. Use a transactional inbox for crash recovery and idempotent effects.
+See [replay storage](docs/REPLAY_STORAGE.md) for the supported contract.

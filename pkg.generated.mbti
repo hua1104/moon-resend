@@ -83,6 +83,9 @@ pub fn HttpResponse::status(Self) -> Int32
 pub enum ReplayError {
   ReplayDetected(String)
   InvalidReplayId(String)
+  InvalidReplayConfig(String)
+  ReplayStoreFull
+  ReplayStoreUnavailable
 }
 pub fn ReplayError::message(Self) -> String
 
@@ -223,12 +226,23 @@ pub enum WebhookEventKind {
 }
 pub fn WebhookEventKind::name(Self) -> String
 
+pub enum WebhookProcessingError {
+  Verification(WebhookError)
+  Replay(ReplayError)
+}
+
 pub struct WebhookReplayGuard {
   seen : Map[String, Int64]
+  ttl_seconds : Int64
+  max_entries : Int32
 }
 pub fn WebhookReplayGuard::check_and_record(Self, String, Int64) -> Result[Unit, ReplayError]
 pub fn WebhookReplayGuard::forget(Self, String) -> Bool
+pub fn WebhookReplayGuard::len(Self) -> Int32
 pub fn WebhookReplayGuard::new() -> Self
+pub fn WebhookReplayGuard::prune(Self, Int64) -> Int32
+pub fn WebhookReplayGuard::with_limits(ttl_seconds~ : Int64, max_entries~ : Int32) -> Result[Self, ReplayError]
+pub impl ReplayStore for WebhookReplayGuard
 
 pub struct WebhookVerifier {
   key : Bytes
@@ -236,7 +250,11 @@ pub struct WebhookVerifier {
 pub fn WebhookVerifier::new(String) -> Result[Self, WebhookError]
 pub fn WebhookVerifier::verify(Self, String, String, String, String, Int64, tolerance? : Int64) -> Result[VerifiedWebhook, WebhookError]
 pub fn WebhookVerifier::verify_event(Self, String, String, String, String, Int64, tolerance? : Int64) -> Result[VerifiedWebhookEvent, WebhookError]
+pub async fn[S : ReplayStore] WebhookVerifier::verify_event_once(Self, S, String, String, String, String, Int64, tolerance? : Int64) -> Result[VerifiedWebhookEvent, WebhookProcessingError]
 
 // Type aliases
 
 // Traits
+pub(open) trait ReplayStore {
+  async fn check_and_record(Self, String, Int64) -> Result[Unit, ReplayError]
+}
