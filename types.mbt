@@ -252,6 +252,8 @@ pub struct ApiError {
   name : String
   message : String
   raw_body : String
+  request_id : String?
+  retry_after_ms : Int32?
 }
 
 ///|
@@ -275,11 +277,51 @@ pub fn ApiError::raw_body(self : ApiError) -> String {
 }
 
 ///|
+pub fn ApiError::request_id(self : ApiError) -> String? {
+  self.request_id
+}
+
+///|
+pub fn ApiError::retry_after_ms(self : ApiError) -> Int32? {
+  self.retry_after_ms
+}
+
+///|
 pub enum ResendError {
   InvalidInput(String)
   Api(ApiError)
   InvalidResponse(String)
   Transport(String)
+}
+
+///|
+pub fn ResendError::is_retryable(self : ResendError) -> Bool {
+  match self {
+    Api(error) =>
+      error.status() == 408 ||
+      error.status() == 429 ||
+      (error.status() >= 500 && error.status() <= 599)
+    Transport(_) => true
+    _ => false
+  }
+}
+
+///|
+/// Return the provider request identifier when the error came from the API.
+pub fn ResendError::request_id(self : ResendError) -> String? {
+  match self {
+    Api(error) => error.request_id()
+    _ => None
+  }
+}
+
+///|
+/// Return the provider retry hint in milliseconds, when present.
+pub fn ResendError::retry_after_ms(self : ResendError) -> Int32? {
+  match self {
+    Api(error) => error.retry_after_ms()
+    _ => None
+  }
 }
 
 ///|

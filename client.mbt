@@ -205,7 +205,7 @@ pub fn Client::parse_id_response(
   if response.status >= 200 && response.status < 300 {
     parse_email_id(response.body)
   } else {
-    Err(Api(parse_api_error(response.status, response.body)))
+    Err(Api(parse_api_error(response.status, response.body, response.headers)))
   }
 }
 
@@ -217,7 +217,7 @@ pub fn Client::parse_batch_response(
   if response.status >= 200 && response.status < 300 {
     parse_batch_email_ids(response.body)
   } else {
-    Err(Api(parse_api_error(response.status, response.body)))
+    Err(Api(parse_api_error(response.status, response.body, response.headers)))
   }
 }
 
@@ -229,6 +229,6 @@ pub fn Client::parse_retrieve_response(
   if response.status >= 200 && response.status < 300 {
     parse_retrieved_email(response.body)
   } else {
-    Err(Api(parse_api_error(response.status, response.body)))
+    Err(Api(parse_api_error(response.status, response.body, response.headers)))
   }
 }

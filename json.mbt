@@ -186,9 +186,47 @@ fn parse_retrieved_email(body : String) -> Result[RetrievedEmail, ResendError] {
 }
 
 ///|
-fn parse_api_error(status : Int32, body : String) -> ApiError {
+fn header_value(headers : Array[(String, String)], name : String) -> String? {
+  for (key, value) in headers {
+    if key.to_lower() == name {
+      return Some(value)
+    }
+  }
+  None
+}
+
+///|
+fn parse_retry_after(value : String?) -> Int32? {
+  match value {
+    Some(text) => {
+      let seconds : Int32 = @string.parse_int(text.trim()) catch {
+        _ => return None
+      }
+      if seconds >= 0 && seconds <= 2147483 {
+        Some(seconds * 1000)
+      } else {
+        None
+      }
+    }
+    None => None
+  }
+}
+
+///|
+fn parse_api_error(
+  status : Int32,
+  body : String,
+  headers : Array[(String, String)],
+) -> ApiError {
   let json = @json.parse(body) catch { _ => Json::null() }
   let name = field_string(json, "name").unwrap_or("api_error")
   let message = field_string(json, "message").unwrap_or(body)
-  { status, name, message, raw_body: body, }
+  {
+    status,
+    name,
+    message,
+    raw_body: body,
+    request_id: header_value(headers, "x-request-id"),
+    retry_after_ms: parse_retry_after(header_value(headers, "retry-after")),
+  }
 }
