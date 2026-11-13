@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import argparse
 from concurrent.futures import ThreadPoolExecutor
 import hashlib
 import hmac
@@ -20,19 +21,56 @@ import time
 from mock_resend_server import Handler, MockServer
 
 
+def build_service(root: Path, moon_home: Path | None) -> tuple[str, dict[str, str]]:
+    """Keep compiler/runtime paired; recover only from missing core artifacts."""
+    suffix = ".exe" if os.name == "nt" else ""
+    selected = str(moon_home.expanduser() / "bin" / ("moon" + suffix)) if moon_home else shutil.which("moon")
+    if not selected:
+        raise SystemExit("MoonBit was not found. Install it or pass --moon-home <installation directory>.")
+    candidates = [Path(selected).resolve()]
+    installed = Path.home() / ".moon" / "bin" / ("moon" + suffix)
+    if moon_home is None and installed.is_file() and installed.resolve() != candidates[0]:
+        candidates.append(installed.resolve())
+    for index, moon in enumerate(candidates):
+        runner = moon.with_name("moonrun" + suffix)
+        if not moon.is_file() or not runner.is_file():
+            raise SystemExit(f"Incomplete MoonBit installation: moon and moonrun must both exist in {moon.parent}")
+        env = dict(os.environ)
+        env["PATH"] = str(moon.parent) + os.pathsep + env.get("PATH", "")
+        print(f"MoonBit toolchain: {moon.parent}", flush=True)
+        result = subprocess.run(
+            [str(moon), "build", "cmd/email-service", "--target", "wasm"],
+            cwd=root, env=env, capture_output=True, text=True, errors="replace",
+        )
+        output = result.stdout + result.stderr
+        if result.returncode == 0:
+            print(output, end="", flush=True)
+            return str(runner), env
+        normalized = output.replace("\\", "/")
+        missing_core = "/lib/core/" in normalized and ".mi missing" in normalized
+        if missing_core and index + 1 < len(candidates):
+            print("Selected toolchain has missing standard-library artifacts; retrying with ~/.moon.", flush=True)
+            continue
+        print(output, end="", flush=True)
+        raise SystemExit(
+            "MoonBit build failed. For an incomplete toolchain, repair that installation or "
+            "pass --moon-home <complete installation directory>."
+        )
+    raise SystemExit("No complete MoonBit toolchain is available.")
+
+
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--moon-home", type=Path, help="MoonBit installation containing bin/moon and bin/moonrun")
+    args = parser.parse_args()
     root = Path(__file__).resolve().parents[1]
-    moon = shutil.which("moon")
-    runner = shutil.which("moonrun")
-    if not moon or not runner:
-        raise SystemExit("moon and moonrun must be on PATH")
-    subprocess.run([moon, "build", "cmd/email-service", "--target", "wasm"], cwd=root, check=True)
+    runner, toolchain_env = build_service(root, args.moon_home)
     provider = MockServer(("127.0.0.1", 0), Handler)
     threading.Thread(target=provider.serve_forever, daemon=True).start()
     with socket.socket() as reserved:
         reserved.bind(("127.0.0.1", 0))
         port = reserved.getsockname()[1]
-    env = dict(os.environ, RESEND_API_KEY="re_integration", RESEND_FROM="hello@example.com",
+    env = dict(toolchain_env, RESEND_API_KEY="re_integration", RESEND_FROM="hello@example.com",
                RESEND_TO="user@example.com", RESEND_WEBHOOK_SECRET="whsec_dGVzdHNlY3JldA==",
                RESEND_BASE_URL=f"http://127.0.0.1:{provider.server_port}/service",
                DEMO_TOKEN="local-test-token", DEMO_ADDR=f"127.0.0.1:{port}")

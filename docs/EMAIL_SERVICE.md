@@ -12,6 +12,20 @@ From the repository root, with MoonBit and Python 3.11+ on PATH:
 python tests/run_service_e2e.py
 ```
 
+The script prints its selected toolchain and uses `moon` and `moonrun` from the
+same installation. If the PATH installation fails because a standard-library
+`.mi` artifact is missing, it retries with the standard `~/.moon` installation
+when available. Compilation errors in project code do not trigger a fallback.
+To select an installation explicitly (with no automatic fallback):
+
+```powershell
+python tests/run_service_e2e.py --moon-home "$env:USERPROFILE\.moon"
+```
+
+An error mentioning `Temp\moonactuary-toolchain-...\moon\lib\core\...ast.mi missing`
+indicates an incomplete temporary toolchain. `moon clean` only clears project
+outputs; it does not repair missing standard-library artifacts in that toolchain.
+
 The script builds and starts the actual Wasm service using `moonrun`, starts a
 local provider fixture on an ephemeral port, and stops both when done. No request
 is sent to Resend. It verifies authentication, required idempotency keys,
