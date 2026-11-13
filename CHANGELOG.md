@@ -6,6 +6,8 @@
 
 - Resend/Svix webhook signature verification with timestamp freshness checks.
 - Verified event metadata for application-level duplicate detection.
+- Typed, forward-compatible webhook event parsing performed only after signature
+  verification.
 - Local-server integration coverage for headers, JSON bodies, lifecycle calls,
   typed API errors and transport timeouts.
 

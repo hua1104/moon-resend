@@ -6,6 +6,7 @@ import {
 }
 
 // Values
+pub fn parse_webhook_event(String) -> Result[WebhookEvent, WebhookError]
 
 // Errors
 
@@ -141,20 +142,71 @@ pub struct VerifiedWebhook {
 pub fn VerifiedWebhook::id(Self) -> String
 pub fn VerifiedWebhook::timestamp(Self) -> Int64
 
+pub struct VerifiedWebhookEvent {
+  verification : VerifiedWebhook
+  event : WebhookEvent
+}
+pub fn VerifiedWebhookEvent::event(Self) -> WebhookEvent
+pub fn VerifiedWebhookEvent::verification(Self) -> VerifiedWebhook
+
 pub enum WebhookError {
   InvalidSecret(String)
   InvalidHeader(String)
   InvalidTimestamp(String)
   TimestampOutsideTolerance
   InvalidSignature
+  InvalidPayload(String)
 }
 pub fn WebhookError::message(Self) -> String
+
+pub struct WebhookEvent {
+  kind : WebhookEventKind
+  created_at : String
+  resource_id : String?
+  email_id : String?
+  sender : String?
+  recipients : Array[String]
+  subject : String?
+  raw_data : @json.Json
+  raw_body : String
+}
+pub fn WebhookEvent::created_at(Self) -> String
+pub fn WebhookEvent::email_id(Self) -> String?
+pub fn WebhookEvent::kind(Self) -> WebhookEventKind
+pub fn WebhookEvent::raw_body(Self) -> String
+pub fn WebhookEvent::raw_data(Self) -> @json.Json
+pub fn WebhookEvent::recipients(Self) -> Array[String]
+pub fn WebhookEvent::resource_id(Self) -> String?
+pub fn WebhookEvent::sender(Self) -> String?
+pub fn WebhookEvent::subject(Self) -> String?
+
+pub enum WebhookEventKind {
+  EmailScheduled
+  EmailSent
+  EmailDelivered
+  EmailDeliveryDelayed
+  EmailComplained
+  EmailBounced
+  EmailOpened
+  EmailClicked
+  EmailFailed
+  EmailSuppressed
+  ContactCreated
+  ContactUpdated
+  ContactDeleted
+  DomainCreated
+  DomainUpdated
+  DomainDeleted
+  Other(String)
+}
+pub fn WebhookEventKind::name(Self) -> String
 
 pub struct WebhookVerifier {
   key : Bytes
 }
 pub fn WebhookVerifier::new(String) -> Result[Self, WebhookError]
 pub fn WebhookVerifier::verify(Self, String, String, String, String, Int64, tolerance? : Int64) -> Result[VerifiedWebhook, WebhookError]
+pub fn WebhookVerifier::verify_event(Self, String, String, String, String, Int64, tolerance? : Int64) -> Result[VerifiedWebhookEvent, WebhookError]
 
 // Type aliases
 

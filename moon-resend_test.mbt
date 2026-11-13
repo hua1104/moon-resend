@@ -287,3 +287,56 @@ test "reject invalid, stale and malformed webhook inputs" {
     is Err(InvalidTimestamp(_)),
   )
 }
+
+///|
+test "parse stable fields from a typed webhook event" {
+  let body = "{\"type\":\"email.delivered\",\"created_at\":\"2026-11-13T08:00:00Z\",\"data\":{\"id\":\"evt_resource\",\"email_id\":\"email_123\",\"from\":\"Moon <hello@example.com>\",\"to\":[\"user@example.com\"],\"subject\":\"Hello\",\"provider_extra\":true}}"
+  let event = @moon-resend.parse_webhook_event(body).unwrap()
+  assert_eq(event.kind().name(), "email.delivered")
+  assert_eq(event.created_at(), "2026-11-13T08:00:00Z")
+  assert_eq(event.resource_id(), Some("evt_resource"))
+  assert_eq(event.email_id(), Some("email_123"))
+  assert_eq(event.sender(), Some("Moon <hello@example.com>"))
+  assert_eq(event.recipients(), ["user@example.com"])
+  assert_eq(event.subject(), Some("Hello"))
+  assert_eq(event.raw_body(), body)
+  assert_true(event.raw_data() is Object(_))
+}
+
+///|
+test "preserve webhook event kinds added by Resend" {
+  let event = @moon-resend.parse_webhook_event(
+    "{\"type\":\"email.future_event\",\"created_at\":\"2026-11-13T08:00:00Z\",\"data\":{\"email_id\":\"email_1\"}}",
+  ).unwrap()
+  assert_true(event.kind() is Other("email.future_event"))
+  assert_eq(event.kind().name(), "email.future_event")
+}
+
+///|
+test "reject malformed webhook envelopes with typed errors" {
+  for
+    body in [
+      "not-json", "[]", "{}", "{\"type\":\"email.sent\"}", "{\"type\":\"email.sent\",\"created_at\":\"now\",\"data\":[]}",
+    ] {
+    assert_true(
+      @moon-resend.parse_webhook_event(body) is Err(InvalidPayload(_)),
+    )
+  }
+}
+
+///|
+test "verify signature before parsing webhook event" {
+  let verifier = @moon-resend.WebhookVerifier::new("whsec_dGVzdHNlY3JldA==").unwrap()
+  let old_payload = "{\"type\":\"email.delivered\",\"data\":{\"email_id\":\"email_123\"}}"
+  let failed = verifier.verify_event(
+    old_payload, "msg_123", "1700000000", "v1,fHunPtzYjXhrwoRtqAAdublxE296fKn6+AZSrd1uRuE=",
+    1700000000L,
+  )
+  assert_true(failed is Err(InvalidPayload(_)))
+  assert_true(
+    verifier.verify_event(
+      "not-json", "msg_123", "1700000000", "v1,bad", 1700000000L,
+    )
+    is Err(InvalidSignature),
+  )
+}

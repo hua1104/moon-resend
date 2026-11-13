@@ -25,6 +25,7 @@ Estimated effort: 4–6 focused development days.
   (implemented for 0.2.0 and exercised in CI);
 - webhook signature verification with documented replay protection (implemented
   early for 0.2.0; duplicate event ids remain application storage policy).
+- forward-compatible typed webhook event parsing (implemented for 0.2.0).
 
 Acceptance: a user can send an email with an API key using the documented adapter, and CI verifies the integration without contacting Resend.
 

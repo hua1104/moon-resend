@@ -25,6 +25,10 @@ ResendError distinguishes invalid input, API errors, malformed success responses
   application storage and reject duplicates to complete replay protection.
 - Always pass the request body exactly as received; parsing and re-serializing JSON
   before verification changes the signed bytes.
+- WebhookVerifier::verify_event(...) verifies before parsing and returns a
+  VerifiedWebhookEvent containing signature metadata plus a typed WebhookEvent.
+- WebhookEvent exposes stable envelope and email fields. Unknown event names and
+  resource-specific data are retained through Other(name) and raw_data().
 
 ## Adapter package
 

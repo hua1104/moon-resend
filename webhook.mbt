@@ -6,6 +6,7 @@ pub enum WebhookError {
   InvalidTimestamp(String)
   TimestampOutsideTolerance
   InvalidSignature
+  InvalidPayload(String)
 }
 
 ///|
@@ -17,6 +18,7 @@ pub fn WebhookError::message(self : WebhookError) -> String {
     TimestampOutsideTolerance =>
       "webhook timestamp is outside the allowed tolerance"
     InvalidSignature => "webhook signature does not match"
+    InvalidPayload(message) => "invalid webhook payload: " + message
   }
 }
 

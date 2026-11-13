@@ -104,6 +104,10 @@ let verified = verifier
 // Persist verified.id() and reject it if it has already been processed.
 ~~~
 
+For handlers that need structured data, verify_event authenticates the exact raw
+body before parsing it. Known event kinds are typed, while future Resend event
+names and resource-specific fields remain accessible without an SDK upgrade.
+
 See [MILESTONES.md](MILESTONES.md) for the delivery plan, [architecture](docs/ARCHITECTURE.md) for the package boundary, and [competition showcase](docs/COMPETITION.md) for the coverage matrix and demo script.
 
 ## Competition roadmap
