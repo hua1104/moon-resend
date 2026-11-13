@@ -9,3 +9,7 @@
 - The official adapter disables redirects so credentials are not forwarded to another origin.
 
 The normal test suite does not require credentials and does not contact Resend. Report vulnerabilities privately to the repository owner before sharing sensitive reproduction details.
+
+Webhook consumers must verify the raw body before parsing and persist event IDs
+to prevent duplicate delivery. The in-memory replay guard is for examples and
+single-process services; distributed services need a durable atomic store.

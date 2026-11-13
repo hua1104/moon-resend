@@ -340,3 +340,35 @@ test "verify signature before parsing webhook event" {
     is Err(InvalidSignature),
   )
 }
+
+///|
+test "classify retryable errors and bound retry policy" {
+  assert_true(@moon-resend.ResendError::transport("timeout").is_retryable())
+  assert_false(@moon-resend.ResendError::invalid_input("bad").is_retryable())
+  let policy = @moon-resend.RetryPolicy::new(
+    max_attempts=4,
+    base_delay_ms=10,
+    max_delay_ms=25,
+  ).unwrap()
+  assert_eq(policy.delay_ms(0), 10)
+  assert_eq(policy.delay_ms(1), 20)
+  assert_eq(policy.delay_ms(2), 25)
+  assert_true(
+    @moon-resend.RetryPolicy::new(max_attempts=0) is Err(InvalidInput(_)),
+  )
+}
+
+///|
+test "webhook replay guard rejects duplicate IDs" {
+  let replay_guard = @moon-resend.WebhookReplayGuard::new()
+  assert_true(replay_guard.check_and_record("msg_1", 1700000000L) is Ok(_))
+  assert_true(
+    replay_guard.check_and_record("msg_1", 1700000001L)
+    is Err(ReplayDetected(_)),
+  )
+  assert_true(replay_guard.forget("msg_1"))
+  assert_true(replay_guard.check_and_record("msg_1", 1700000002L) is Ok(_))
+  assert_true(
+    replay_guard.check_and_record("  ", 1700000000L) is Err(InvalidReplayId(_)),
+  )
+}

@@ -8,6 +8,8 @@
 - Verified event metadata for application-level duplicate detection.
 - Typed, forward-compatible webhook event parsing performed only after signature
   verification.
+- Retry classification, bounded exponential backoff, response request IDs and
+  an in-memory webhook replay guard.
 - Local-server integration coverage for headers, JSON bodies, lifecycle calls,
   typed API errors and transport timeouts.
 

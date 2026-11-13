@@ -16,10 +16,14 @@ pub struct ApiError {
   name : String
   message : String
   raw_body : String
+  request_id : String?
+  retry_after_ms : Int32?
 }
 pub fn ApiError::message(Self) -> String
 pub fn ApiError::name(Self) -> String
 pub fn ApiError::raw_body(Self) -> String
+pub fn ApiError::request_id(Self) -> String?
+pub fn ApiError::retry_after_ms(Self) -> Int32?
 pub fn ApiError::status(Self) -> Int32
 
 pub struct Attachment {
@@ -76,6 +80,12 @@ pub fn HttpResponse::headers(Self) -> Array[(String, String)]
 pub fn HttpResponse::new(Int32, String, headers? : Array[(String, String)]) -> Self
 pub fn HttpResponse::status(Self) -> Int32
 
+pub enum ReplayError {
+  ReplayDetected(String)
+  InvalidReplayId(String)
+}
+pub fn ReplayError::message(Self) -> String
+
 pub enum ResendError {
   InvalidInput(String)
   Api(ApiError)
@@ -83,7 +93,10 @@ pub enum ResendError {
   Transport(String)
 }
 pub fn ResendError::invalid_input(String) -> Self
+pub fn ResendError::is_retryable(Self) -> Bool
 pub fn ResendError::message(Self) -> String
+pub fn ResendError::request_id(Self) -> String?
+pub fn ResendError::retry_after_ms(Self) -> Int32?
 pub fn ResendError::transport(String) -> Self
 
 pub struct RetrievedEmail {
@@ -112,6 +125,15 @@ pub fn RetrievedEmail::scheduled_at(Self) -> String?
 pub fn RetrievedEmail::sender(Self) -> String
 pub fn RetrievedEmail::subject(Self) -> String
 pub fn RetrievedEmail::text(Self) -> String?
+
+pub struct RetryPolicy {
+  max_attempts : Int32
+  base_delay_ms : Int32
+  max_delay_ms : Int32
+}
+pub fn RetryPolicy::delay_ms(Self, Int32) -> Int32
+pub fn RetryPolicy::max_attempts(Self) -> Int32
+pub fn RetryPolicy::new(max_attempts? : Int32, base_delay_ms? : Int32, max_delay_ms? : Int32) -> Result[Self, ResendError]
 
 pub struct SendEmailParams {
   from : String
@@ -200,6 +222,13 @@ pub enum WebhookEventKind {
   Other(String)
 }
 pub fn WebhookEventKind::name(Self) -> String
+
+pub struct WebhookReplayGuard {
+  seen : Map[String, Int64]
+}
+pub fn WebhookReplayGuard::check_and_record(Self, String, Int64) -> Result[Unit, ReplayError]
+pub fn WebhookReplayGuard::forget(Self, String) -> Bool
+pub fn WebhookReplayGuard::new() -> Self
 
 pub struct WebhookVerifier {
   key : Bytes

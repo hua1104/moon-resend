@@ -32,4 +32,12 @@ ResendError distinguishes invalid input, API errors, malformed success responses
 
 ## Adapter package
 
-The adapter package exposes send, send_batch, retrieve, update, cancel and low-level execute. All functions accept an optional timeout in milliseconds. Redirects are disabled deliberately.
+The adapter package exposes send, send_batch, retrieve, update, cancel and low-level execute. All functions accept an optional timeout in milliseconds. Redirects are disabled deliberately. send_with_retry performs bounded exponential backoff only for retryable failures and requires an idempotency key.
+
+ApiError request IDs, retry delays and ResendError retry classification let applications make an explicit retry and logging decision.
+
+## Replay protection
+
+WebhookReplayGuard is a small in-memory reference implementation. Call its
+check-and-record operation before business effects; distributed services should
+implement the same atomic operation in durable storage.

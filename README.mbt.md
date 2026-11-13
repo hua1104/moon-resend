@@ -137,6 +137,17 @@ python tests/mock_resend_server.py --port 18765
 MOON_RESEND_MOCK_URL=http://127.0.0.1:18765 moon test adapter --target js
 ~~~
 
+For retrying sends, use `send_with_retry` and supply a stable idempotency
+key. The adapter retries transport failures, HTTP 408/429 and 5xx responses,
+honors numeric `Retry-After` values, and never retries ordinary 4xx responses.
+
+Webhook processing must follow this order: verify the signature against the raw
+request body, parse the verified event, atomically record its event ID, then run
+business side effects. `WebhookReplayGuard` is intentionally an in-memory,
+single-process implementation; production deployments with multiple workers
+must use Redis or a database to provide an atomic check-and-record operation,
+unique event IDs, and a retention policy.
+
 ## License
 
 Apache-2.0
