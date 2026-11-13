@@ -11,6 +11,8 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
+    retry_attempts: dict[str, int] = {}
+    no_retry_attempts = 0
 
     def log_message(self, format: str, *args: object) -> None:
         return
@@ -19,11 +21,18 @@ class Handler(BaseHTTPRequestHandler):
         length = int(self.headers.get("Content-Length", "0"))
         return self.rfile.read(length)
 
-    def _json(self, status: int, payload: dict[str, object]) -> None:
+    def _json(
+        self,
+        status: int,
+        payload: dict[str, object],
+        headers: dict[str, str] | None = None,
+    ) -> None:
         body = json.dumps(payload, separators=(",", ":")).encode()
         self.send_response(status)
         self.send_header("Content-Type", "application/json")
         self.send_header("Content-Length", str(len(body)))
+        for name, value in (headers or {}).items():
+            self.send_header(name, value)
         self.end_headers()
         try:
             self.wfile.write(body)
@@ -44,7 +53,31 @@ class Handler(BaseHTTPRequestHandler):
             self._json(
                 422,
                 {"name": "validation_error", "message": "mock recipient rejected"},
+                {"X-Request-ID": "req_validation_1", "Retry-After": "7"},
             )
+            return
+        if self.path == "/no-retry/emails":
+            self._body()
+            Handler.no_retry_attempts += 1
+            if Handler.no_retry_attempts == 1:
+                self._json(422, {"name": "validation_error", "message": "do not retry"})
+            else:
+                self._json(200, {"id": "unexpected_retry"})
+            return
+        if self.path == "/retry/emails":
+            self._body()
+            key = self.headers.get("Idempotency-Key", "")
+            if key != "retry-integration-42":
+                self._json(400, {"name": "fixture_mismatch", "message": "missing stable idempotency key"})
+                return
+            attempt = Handler.retry_attempts.get(key, 0) + 1
+            Handler.retry_attempts[key] = attempt
+            if attempt == 1:
+                self._json(500, {"name": "internal_server_error", "message": "retry once"}, {"X-Request-ID": "req_retry_1", "Retry-After": "0"})
+            elif attempt == 2:
+                self._json(429, {"name": "rate_limit_exceeded", "message": "retry twice"}, {"X-Request-ID": "req_retry_2", "Retry-After": "0"})
+            else:
+                self._json(200, {"id": "email_retry_123"})
             return
         if self.path == "/emails/email_mock_123/cancel":
             self._json(200, {"id": "email_mock_123"})

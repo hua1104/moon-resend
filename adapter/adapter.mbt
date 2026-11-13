@@ -69,6 +69,34 @@ pub async fn send(
 }
 
 ///|
+pub async fn send_with_retry(
+  client : @resend.Client,
+  params : @resend.SendEmailParams,
+  idempotency_key : String,
+  policy? : @resend.RetryPolicy,
+  timeout? : Int32,
+) -> Result[@resend.EmailId, @resend.ResendError] {
+  let policy = policy.unwrap_or(@resend.RetryPolicy::new().unwrap())
+  let mut attempt = 0
+  let mut last : Result[@resend.EmailId, @resend.ResendError] = Err(
+    @resend.ResendError::transport("retry did not execute"),
+  )
+  while attempt < policy.max_attempts() {
+    last = send(client, params, idempotency_key~, timeout?)
+    match last {
+      Ok(_) => return last
+      Err(error) if error.is_retryable() && attempt + 1 < policy.max_attempts() => {
+        let delay = error.retry_after_ms().unwrap_or(policy.delay_ms(attempt))
+        @async.sleep(delay)
+        attempt += 1
+      }
+      Err(_) => return last
+    }
+  }
+  last
+}
+
+///|
 pub async fn send_batch(
   client : @resend.Client,
   emails : Array[@resend.SendEmailParams],

@@ -16,6 +16,8 @@ pub async fn send(@moon-resend.Client, @moon-resend.SendEmailParams, idempotency
 
 pub async fn send_batch(@moon-resend.Client, Array[@moon-resend.SendEmailParams], idempotency_key? : String, timeout? : Int32) -> Result[@moon-resend.BatchEmailIds, @moon-resend.ResendError]
 
+pub async fn send_with_retry(@moon-resend.Client, @moon-resend.SendEmailParams, String, policy? : @moon-resend.RetryPolicy, timeout? : Int32) -> Result[@moon-resend.EmailId, @moon-resend.ResendError]
+
 pub async fn update(@moon-resend.Client, String, @moon-resend.UpdateEmailParams, timeout? : Int32) -> Result[@moon-resend.EmailId, @moon-resend.ResendError]
 
 // Errors

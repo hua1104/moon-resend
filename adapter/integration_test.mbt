@@ -57,6 +57,53 @@ async test "adapter preserves structured API failures over real HTTP" {
   assert_eq(error.status(), 422)
   assert_eq(error.name(), "validation_error")
   assert_eq(error.message(), "mock recipient rejected")
+  assert_eq(error.request_id(), Some("req_validation_1"))
+  assert_eq(error.retry_after_ms(), Some(7000))
+  assert_eq(failed.unwrap_err().request_id(), Some("req_validation_1"))
+  assert_eq(failed.unwrap_err().retry_after_ms(), Some(7000))
+}
+
+///|
+async test "adapter retries transient failures with one stable idempotency key" {
+  guard integration_base() is Some(base) else { return }
+  let client = @resend.Client::new("re_integration", base_url=base + "/retry").unwrap()
+  let policy = @resend.RetryPolicy::new(
+    max_attempts=3,
+    base_delay_ms=0,
+    max_delay_ms=0,
+  ).unwrap()
+  let sent = @adapter.send_with_retry(
+    client,
+    integration_email(),
+    "retry-integration-42",
+    policy~,
+    timeout=2000,
+  ).unwrap()
+  assert_eq(sent.id(), "email_retry_123")
+}
+
+///|
+async test "adapter does not retry non-retryable API failures" {
+  guard integration_base() is Some(base) else { return }
+  let client = @resend.Client::new(
+    "re_integration",
+    base_url=base + "/no-retry",
+  ).unwrap()
+  let policy = @resend.RetryPolicy::new(
+    max_attempts=3,
+    base_delay_ms=0,
+    max_delay_ms=0,
+  ).unwrap()
+  let failed = @adapter.send_with_retry(
+    client,
+    integration_email(),
+    "no-retry-integration-42",
+    policy~,
+    timeout=2000,
+  )
+  guard failed is Err(Api(error)) else { fail("expected typed API error") }
+  assert_eq(error.status(), 422)
+  assert_eq(error.message(), "do not retry")
 }
 
 ///|

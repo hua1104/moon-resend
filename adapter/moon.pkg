@@ -1,12 +1,9 @@
 import {
   "hua1104/moon-resend" @resend,
+  "moonbitlang/async",
   "moonbitstack/moonfetch",
 }
 
 import {
   "moonbitlang/core/env",
-} for "test"
-
-import {
-  "moonbitlang/async",
 } for "test"
