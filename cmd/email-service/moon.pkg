@@ -1,0 +1,23 @@
+import {
+  "hua1104/moon-resend" @resend,
+  "hua1104/moon-resend/adapter",
+  "moonbitlang/async",
+  "moonbitlang/async/http",
+  "moonbitlang/async/io",
+  "moonbitlang/async/socket",
+  "moonbitlang/core/env",
+  "moonbitlang/core/json",
+  "moonbitlang/core/buffer",
+  "moonbitlang/core/encoding/utf8",
+}
+
+pkgtype(kind: "executable")
+
+warnings = "-29"
+
+options(
+  targets: {
+    "main.mbt": [ "native", "wasm" ],
+    "elsewhere.mbt": [ "js", "wasm-gc" ],
+  },
+)

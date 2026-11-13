@@ -148,6 +148,14 @@ single-process implementation; production deployments with multiple workers
 must use Redis or a database to provide an atomic check-and-record operation,
 unique event IDs, and a retention policy.
 
+## Complete service example
+
+Run `python tests/run_service_e2e.py` for a credential-free end-to-end demo of
+the actual MoonBit HTTP service: send, verify signed callbacks, reject concurrent
+duplicates and query email status. See the [service guide](docs/EMAIL_SERVICE.md)
+for real Resend setup and [replay storage contracts](docs/REPLAY_STORAGE.md) for
+TTL/capacity limits and custom Redis/database store integration.
+
 ## License
 
 Apache-2.0

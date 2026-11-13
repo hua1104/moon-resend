@@ -51,10 +51,14 @@ jobs:
       - name: Test native adapter
         run: moon test --target native
 
+      - name: Test complete email service without credentials
+        run: python3 tests/run_service_e2e.py
+
       - name: Build live example
         run: moon build cmd/send-live --target native
 
       - name: Verify formatting
         run: |
+          moon info
           moon fmt
           git diff --exit-code

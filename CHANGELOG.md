@@ -10,6 +10,10 @@
   verification.
 - Retry classification, bounded exponential backoff, response request IDs and
   an in-memory webhook replay guard.
+- Bounded replay retention with configurable TTL/capacity, an async ReplayStore
+  extension contract and verify-parse-claim integration.
+- Runnable MoonBit email service and credential-free end-to-end tests for
+  sends, signed callbacks, concurrent duplicates and last-observed email state.
 - Local-server integration coverage for headers, JSON bodies, lifecycle calls,
   typed API errors and transport timeouts.
 

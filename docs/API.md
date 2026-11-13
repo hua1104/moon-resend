@@ -41,3 +41,12 @@ ApiError request IDs, retry delays and ResendError retry classification let appl
 WebhookReplayGuard is a small in-memory reference implementation. Call its
 check-and-record operation before business effects; distributed services should
 implement the same atomic operation in durable storage.
+
+The public async `ReplayStore` trait supports custom shared storage.
+`WebhookVerifier::verify_event_once` verifies, parses, then claims the verified
+delivery ID. It returns `WebhookProcessingError::Verification` or `Replay` on
+failure. The default memory store retains 10,000 IDs for one day; `with_limits`
+configures positive TTL/capacity. `len`, `prune` and `forget` support maintenance.
+It fails closed at capacity and does not evict live claims.
+See [storage contracts and failure semantics](REPLAY_STORAGE.md) and the
+[complete HTTP service](EMAIL_SERVICE.md).

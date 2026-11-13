@@ -13,6 +13,7 @@ class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
     retry_attempts: dict[str, int] = {}
     no_retry_attempts = 0
+    service_attempts = 0
 
     def log_message(self, format: str, *args: object) -> None:
         return
@@ -43,6 +44,14 @@ class Handler(BaseHTTPRequestHandler):
         return self.headers.get("Authorization") == "Bearer re_integration"
 
     def do_POST(self) -> None:
+        if self.path == "/service/emails":
+            payload = json.loads(self._body())
+            Handler.service_attempts += 1
+            if not self._authorized() or self.headers.get("Idempotency-Key") != "service-e2e-42" or payload.get("to") != ["user@example.com"]:
+                self._json(400, {"name": "fixture_mismatch", "message": "service request mismatch"})
+            else:
+                self._json(200, {"id": "email_service_123"})
+            return
         if self.path == "/slow/emails":
             self._body()
             time.sleep(0.25)
