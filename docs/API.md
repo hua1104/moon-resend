@@ -50,3 +50,12 @@ configures positive TTL/capacity. `len`, `prune` and `forget` support maintenanc
 It fails closed at capacity and does not evict live claims.
 See [storage contracts and failure semantics](REPLAY_STORAGE.md) and the
 [complete HTTP service](EMAIL_SERVICE.md).
+
+## Typed delivery and bounce callbacks
+
+After raw-body verification, `WebhookEvent::delivery()` exposes the stable
+fields of `email.delivered`. `WebhookEvent::bounce()` exposes the stable
+fields of `email.bounced`, including bounce type, subtype, message and SMTP
+diagnostic codes. Both return `None` for a different event kind or an
+incomplete provider payload; the original forward-compatible `raw_data()`
+remains available.

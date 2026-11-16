@@ -77,13 +77,19 @@ def main() -> None:
     artifact = root / "_build/wasm/debug/build/cmd/email-service/email-service.wasm"
 
     def request(method: str, path: str, body: bytes = b"", headers: dict[str, str] | None = None) -> tuple[int, dict]:
-        conn = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
-        try:
-            conn.request(method, path, body, headers or {})
-            response = conn.getresponse()
-            return response.status, json.loads(response.read())
-        finally:
-            conn.close()
+        last_error: OSError | None = None
+        for _ in range(20):
+            conn = http.client.HTTPConnection("127.0.0.1", port, timeout=10)
+            try:
+                conn.request(method, path, body, headers or {})
+                response = conn.getresponse()
+                return response.status, json.loads(response.read())
+            except (ConnectionResetError, ConnectionAbortedError, TimeoutError, OSError) as error:
+                last_error = error
+                time.sleep(.05)
+            finally:
+                conn.close()
+        raise RuntimeError(f"service request failed after retries: {last_error}")
 
     with tempfile.TemporaryFile(mode="w+b") as output:
         process = subprocess.Popen([runner, str(artifact)], cwd=root, env=env, stdout=output, stderr=subprocess.STDOUT)

@@ -57,6 +57,9 @@ jobs:
       - name: Build live example
         run: moon build cmd/send-live --target native
 
+      - name: Verify package can be published
+        run: moon publish --dry-run
+
       - name: Verify formatting
         run: |
           moon info

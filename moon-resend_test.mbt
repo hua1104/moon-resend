@@ -301,6 +301,24 @@ test "parse stable fields from a typed webhook event" {
   assert_eq(event.subject(), Some("Hello"))
   assert_eq(event.raw_body(), body)
   assert_true(event.raw_data() is Object(_))
+  let delivery = event.delivery().unwrap()
+  assert_eq(delivery.email_id(), "email_123")
+  assert_eq(delivery.sender(), event.sender().unwrap())
+  assert_eq(delivery.recipients(), ["user@example.com"])
+  assert_eq(delivery.subject(), Some("Hello"))
+}
+
+///|
+test "parse typed bounce callback details" {
+  let event = @moon-resend.parse_webhook_event(
+    "{\"type\":\"email.bounced\",\"created_at\":\"2026-11-16T08:00:00Z\",\"data\":{\"email_id\":\"email_456\",\"from\":\"Moon hello@example.com\",\"to\":[\"bad@example.com\"],\"subject\":\"Hello\",\"bounce\":{\"type\":\"Permanent\",\"subType\":\"NoEmail\",\"message\":\"user unknown\",\"diagnosticCode\":[\"smtp; 550 5.1.1 user unknown\"]}}}",
+  ).unwrap()
+  let bounce = event.bounce().unwrap()
+  assert_eq(bounce.email_id(), "email_456")
+  assert_eq(bounce.bounce_type(), "Permanent")
+  assert_eq(bounce.sub_type(), "NoEmail")
+  assert_eq(bounce.message(), "user unknown")
+  assert_eq(bounce.diagnostic_codes(), ["smtp; 550 5.1.1 user unknown"])
 }
 
 ///|

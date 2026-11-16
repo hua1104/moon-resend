@@ -8,6 +8,8 @@
 - [中文比赛展示说明](docs/COMPETITION_ZH.md)
 - [架构说明](docs/ARCHITECTURE.md)
 - [公开 API 索引](docs/API.md)
+- [兼容范围声明](docs/COMPATIBILITY.md)
+- [生产与赛事审计](docs/PRODUCTION_AUDIT.md)
 - [阶段规划](MILESTONES.md)
 - [更新记录](CHANGELOG.md)
 - [安全说明](SECURITY.md)

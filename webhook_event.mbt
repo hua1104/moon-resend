@@ -128,10 +128,189 @@ pub fn WebhookEvent::raw_body(self : WebhookEvent) -> String {
 }
 
 ///|
+/// Typed stable fields for an email.delivered webhook.
+pub struct WebhookDeliveryInfo {
+  email_id : String
+  created_at : String
+  sender : String
+  recipients : Array[String]
+  subject : String?
+}
+
+///|
+pub fn WebhookDeliveryInfo::email_id(self : WebhookDeliveryInfo) -> String {
+  self.email_id
+}
+
+///|
+pub fn WebhookDeliveryInfo::created_at(self : WebhookDeliveryInfo) -> String {
+  self.created_at
+}
+
+///|
+pub fn WebhookDeliveryInfo::sender(self : WebhookDeliveryInfo) -> String {
+  self.sender
+}
+
+///|
+pub fn WebhookDeliveryInfo::recipients(
+  self : WebhookDeliveryInfo,
+) -> Array[String] {
+  self.recipients.copy()
+}
+
+///|
+pub fn WebhookDeliveryInfo::subject(self : WebhookDeliveryInfo) -> String? {
+  self.subject
+}
+
+///|
+/// Typed bounce details for an email.bounced webhook.
+pub struct WebhookBounceInfo {
+  email_id : String
+  created_at : String
+  sender : String
+  recipients : Array[String]
+  subject : String?
+  bounce_type : String
+  sub_type : String
+  message : String
+  diagnostic_codes : Array[String]
+}
+
+///|
+pub fn WebhookBounceInfo::email_id(self : WebhookBounceInfo) -> String {
+  self.email_id
+}
+
+///|
+pub fn WebhookBounceInfo::created_at(self : WebhookBounceInfo) -> String {
+  self.created_at
+}
+
+///|
+pub fn WebhookBounceInfo::sender(self : WebhookBounceInfo) -> String {
+  self.sender
+}
+
+///|
+pub fn WebhookBounceInfo::recipients(self : WebhookBounceInfo) -> Array[String] {
+  self.recipients.copy()
+}
+
+///|
+pub fn WebhookBounceInfo::subject(self : WebhookBounceInfo) -> String? {
+  self.subject
+}
+
+///|
+pub fn WebhookBounceInfo::bounce_type(self : WebhookBounceInfo) -> String {
+  self.bounce_type
+}
+
+///|
+pub fn WebhookBounceInfo::sub_type(self : WebhookBounceInfo) -> String {
+  self.sub_type
+}
+
+///|
+pub fn WebhookBounceInfo::message(self : WebhookBounceInfo) -> String {
+  self.message
+}
+
+///|
+pub fn WebhookBounceInfo::diagnostic_codes(
+  self : WebhookBounceInfo,
+) -> Array[String] {
+  self.diagnostic_codes.copy()
+}
+
+///|
+/// Return typed delivery fields when this is an email.delivered event.
+pub fn WebhookEvent::delivery(self : WebhookEvent) -> WebhookDeliveryInfo? {
+  guard self.kind is EmailDelivered else { return None }
+  let email_id = match self.email_id {
+    Some(value) => value
+    None => return None
+  }
+  let sender = match self.sender {
+    Some(value) => value
+    None => return None
+  }
+  if self.recipients.length() == 0 {
+    return None
+  }
+  Some({
+    email_id,
+    created_at: self.created_at,
+    sender,
+    recipients: self.recipients.copy(),
+    subject: self.subject,
+  })
+}
+
+///|
+/// Return typed bounce details when this is an email.bounced event.
+pub fn WebhookEvent::bounce(self : WebhookEvent) -> WebhookBounceInfo? {
+  guard self.kind is EmailBounced else { return None }
+  let email_id = match self.email_id {
+    Some(value) => value
+    None => return None
+  }
+  let sender = match self.sender {
+    Some(value) => value
+    None => return None
+  }
+  if self.recipients.length() == 0 {
+    return None
+  }
+  let bounce = match field_object(self.raw_data, "bounce") {
+    Some(value) => value
+    None => return None
+  }
+  let bounce_type = match field_string(bounce, "type") {
+    Some(value) => value
+    None => return None
+  }
+  let sub_type = match field_string(bounce, "subType") {
+    Some(value) => value
+    None => return None
+  }
+  let message = match field_string(bounce, "message") {
+    Some(value) => value
+    None => return None
+  }
+  let diagnostic_codes = match field_strings(bounce, "diagnosticCode") {
+    Some(value) => value
+    None => return None
+  }
+  Some({
+    email_id,
+    created_at: self.created_at,
+    sender,
+    recipients: self.recipients.copy(),
+    subject: self.subject,
+    bounce_type,
+    sub_type,
+    message,
+    diagnostic_codes,
+  })
+}
+
+///|
 fn webhook_string(value : Json, field : String) -> String? {
   guard value is Object(fields) else { return None }
   match fields.get(field) {
     Some(String(text)) => Some(text)
+    _ => None
+  }
+}
+
+///|
+fn field_object(value : Json, field : String) -> Json? {
+  guard value is Object(fields) else { return None }
+  match fields.get(field) {
+    Some(Object(_) as object) => Some(object)
     _ => None
   }
 }

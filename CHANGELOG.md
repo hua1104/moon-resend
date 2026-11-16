@@ -1,6 +1,14 @@
 # Changelog
 
-## 0.2.0 — Unreleased
+## 0.3.0 — Unreleased
+
+### Added
+
+- Typed email.delivered projection through WebhookEvent::delivery.
+- Typed email.bounced details through WebhookEvent::bounce, including bounce
+  type, subtype, message and SMTP diagnostic codes.
+
+## 0.2.0 — 2026-11-16
 
 ### Added
 

@@ -20,7 +20,6 @@ async fn reply(
   })
   conn.write(body)
   conn.end_response()
-  conn.close()
 }
 
 ///|

@@ -190,6 +190,40 @@ pub struct VerifiedWebhookEvent {
 pub fn VerifiedWebhookEvent::event(Self) -> WebhookEvent
 pub fn VerifiedWebhookEvent::verification(Self) -> VerifiedWebhook
 
+pub struct WebhookBounceInfo {
+  email_id : String
+  created_at : String
+  sender : String
+  recipients : Array[String]
+  subject : String?
+  bounce_type : String
+  sub_type : String
+  message : String
+  diagnostic_codes : Array[String]
+}
+pub fn WebhookBounceInfo::bounce_type(Self) -> String
+pub fn WebhookBounceInfo::created_at(Self) -> String
+pub fn WebhookBounceInfo::diagnostic_codes(Self) -> Array[String]
+pub fn WebhookBounceInfo::email_id(Self) -> String
+pub fn WebhookBounceInfo::message(Self) -> String
+pub fn WebhookBounceInfo::recipients(Self) -> Array[String]
+pub fn WebhookBounceInfo::sender(Self) -> String
+pub fn WebhookBounceInfo::sub_type(Self) -> String
+pub fn WebhookBounceInfo::subject(Self) -> String?
+
+pub struct WebhookDeliveryInfo {
+  email_id : String
+  created_at : String
+  sender : String
+  recipients : Array[String]
+  subject : String?
+}
+pub fn WebhookDeliveryInfo::created_at(Self) -> String
+pub fn WebhookDeliveryInfo::email_id(Self) -> String
+pub fn WebhookDeliveryInfo::recipients(Self) -> Array[String]
+pub fn WebhookDeliveryInfo::sender(Self) -> String
+pub fn WebhookDeliveryInfo::subject(Self) -> String?
+
 pub enum WebhookError {
   InvalidSecret(String)
   InvalidHeader(String)
@@ -211,7 +245,9 @@ pub struct WebhookEvent {
   raw_data : @json.Json
   raw_body : String
 }
+pub fn WebhookEvent::bounce(Self) -> WebhookBounceInfo?
 pub fn WebhookEvent::created_at(Self) -> String
+pub fn WebhookEvent::delivery(Self) -> WebhookDeliveryInfo?
 pub fn WebhookEvent::email_id(Self) -> String?
 pub fn WebhookEvent::kind(Self) -> WebhookEventKind
 pub fn WebhookEvent::raw_body(Self) -> String
