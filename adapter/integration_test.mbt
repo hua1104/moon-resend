@@ -114,3 +114,24 @@ async test "adapter maps real HTTP timeouts to transport errors" {
     @adapter.send(client, integration_email(), timeout=50) is Err(Transport(_)),
   )
 }
+
+///|
+async test "adapter traverses real paginated email history" {
+  guard integration_base() is Some(base) else { return }
+  let client = @resend.Client::new("re_integration", base_url=base).unwrap()
+  let first = @adapter.list_emails(
+    client,
+    params=@resend.ListEmailsParams::new(limit=2),
+    timeout=2000,
+  ).unwrap()
+  assert_true(first.has_more())
+  assert_eq(first.data().length(), 2)
+  assert_eq(first.data()[1].last_event(), Some("bounced"))
+  let second = @adapter.list_emails(
+    client,
+    params=@resend.ListEmailsParams::new(limit=2, after=first.data()[1].id()),
+    timeout=2000,
+  ).unwrap()
+  assert_false(second.has_more())
+  assert_eq(second.data()[0].id(), "email_page_3")
+}

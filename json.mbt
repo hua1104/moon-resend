@@ -109,6 +109,16 @@ fn field_strings(value : Json, field : String) -> Array[String]? {
 }
 
 ///|
+fn field_bool(value : Json, field : String) -> Bool? {
+  guard value is Object(fields) else { return None }
+  match fields.get(field) {
+    Some(True) => Some(true)
+    Some(False) => Some(false)
+    _ => None
+  }
+}
+
+///|
 fn parse_email_id(body : String) -> Result[EmailId, ResendError] {
   let json = @json.parse(body) catch {
     error => return Err(InvalidResponse("invalid JSON: " + error.to_string()))
@@ -183,6 +193,76 @@ fn parse_retrieved_email(body : String) -> Result[RetrievedEmail, ResendError] {
     last_event: field_string(json, "last_event"),
     scheduled_at: field_string(json, "scheduled_at"),
   })
+}
+
+///|
+fn parse_email_value(json : Json) -> Result[RetrievedEmail, ResendError] {
+  let id = match field_string(json, "id") {
+    Some(value) => value
+    None => return Err(InvalidResponse("email item is missing string field id"))
+  }
+  let sender = match field_string(json, "from") {
+    Some(value) => value
+    None =>
+      return Err(InvalidResponse("email item is missing string field from"))
+  }
+  let recipients = match field_strings(json, "to") {
+    Some(value) => value
+    None =>
+      return Err(InvalidResponse("email item is missing string array field to"))
+  }
+  let subject = match field_string(json, "subject") {
+    Some(value) => value
+    None =>
+      return Err(InvalidResponse("email item is missing string field subject"))
+  }
+  let created_at = match field_string(json, "created_at") {
+    Some(value) => value
+    None =>
+      return Err(
+        InvalidResponse("email item is missing string field created_at"),
+      )
+  }
+  Ok({
+    id,
+    from: sender,
+    to: recipients,
+    subject,
+    created_at,
+    html: field_string(json, "html"),
+    text: field_string(json, "text"),
+    cc: field_strings(json, "cc").unwrap_or([]),
+    bcc: field_strings(json, "bcc").unwrap_or([]),
+    reply_to: field_strings(json, "reply_to").unwrap_or([]),
+    last_event: field_string(json, "last_event"),
+    scheduled_at: field_string(json, "scheduled_at"),
+  })
+}
+
+///|
+fn parse_email_page(body : String) -> Result[EmailPage, ResendError] {
+  let json = @json.parse(body) catch {
+    error => return Err(InvalidResponse("invalid JSON: " + error.to_string()))
+  }
+  guard json is Object(fields) else {
+    return Err(InvalidResponse("response must be a JSON object"))
+  }
+  guard fields.get("data") is Some(Array(items)) else {
+    return Err(InvalidResponse("response is missing array field data"))
+  }
+  let has_more = match field_bool(json, "has_more") {
+    Some(value) => value
+    None =>
+      return Err(InvalidResponse("response is missing boolean field has_more"))
+  }
+  let data : Array[RetrievedEmail] = []
+  for item in items {
+    match parse_email_value(item) {
+      Ok(email) => data.push(email)
+      Err(error) => return Err(error)
+    }
+  }
+  Ok({ data, has_more, })
 }
 
 ///|

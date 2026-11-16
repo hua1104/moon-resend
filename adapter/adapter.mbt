@@ -130,6 +130,22 @@ pub async fn retrieve(
 }
 
 ///|
+pub async fn list_emails(
+  client : @resend.Client,
+  params? : @resend.ListEmailsParams,
+  timeout? : Int32,
+) -> Result[@resend.EmailPage, @resend.ResendError] {
+  let request = match client.list_emails_request(params?) {
+    Ok(value) => value
+    Err(error) => return Err(error)
+  }
+  match execute(request, timeout?) {
+    Ok(response) => client.parse_list_emails_response(response)
+    Err(error) => Err(error)
+  }
+}
+
+///|
 pub async fn update(
   client : @resend.Client,
   id : String,

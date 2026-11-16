@@ -7,6 +7,7 @@ import json
 import time
 import sys
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from urllib.parse import parse_qs, urlparse
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -114,6 +115,61 @@ class Handler(BaseHTTPRequestHandler):
         self._json(200, {"id": "email_mock_123"})
 
     def do_GET(self) -> None:
+        parsed = urlparse(self.path)
+        if parsed.path == "/emails" and self._authorized():
+            query = parse_qs(parsed.query)
+            if query.get("limit") != ["2"]:
+                self._json(400, {"name": "fixture_mismatch", "message": "bad limit"})
+                return
+            after = query.get("after")
+            if after is None:
+                self._json(
+                    200,
+                    {
+                        "object": "list",
+                        "has_more": True,
+                        "data": [
+                            {
+                                "id": "email_page_1",
+                                "from": "Moon hello@example.com",
+                                "to": ["user@example.com"],
+                                "subject": "First",
+                                "created_at": "2026-11-16T08:00:00Z",
+                                "last_event": "delivered",
+                            },
+                            {
+                                "id": "email_page_2",
+                                "from": "Moon hello@example.com",
+                                "to": ["user@example.com"],
+                                "subject": "Second",
+                                "created_at": "2026-11-16T08:01:00Z",
+                                "last_event": "bounced",
+                            },
+                        ],
+                    },
+                )
+                return
+            if after == ["email_page_2"]:
+                self._json(
+                    200,
+                    {
+                        "object": "list",
+                        "has_more": False,
+                        "data": [
+                            {
+                                "id": "email_page_3",
+                                "from": "Moon hello@example.com",
+                                "to": ["user@example.com"],
+                                "subject": "Third",
+                                "created_at": "2026-11-16T08:02:00Z",
+                                "last_event": "sent",
+                            },
+                        ],
+                    },
+                )
+                return
+            self._json(400, {"name": "fixture_mismatch", "message": "bad cursor"})
+            return
         if self.path != "/emails/email_mock_123" or not self._authorized():
             self._json(404, {"name": "not_found", "message": self.path})
             return

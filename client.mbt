@@ -160,6 +160,65 @@ pub fn Client::retrieve_request(
 }
 
 ///|
+fn validate_cursor(name : String, value : String) -> Result[Unit, ResendError] {
+  if value.trim().is_empty() {
+    return Err(InvalidInput(name + " cursor must not be empty"))
+  }
+  if value.contains("&") ||
+    value.contains("?") ||
+    value.contains("#") ||
+    value.contains("=") {
+    return Err(InvalidInput(name + " cursor contains unsafe characters"))
+  }
+  Ok(())
+}
+
+///|
+pub fn Client::list_emails_request(
+  self : Client,
+  params? : ListEmailsParams,
+) -> Result[HttpRequest, ResendError] {
+  let options = params.unwrap_or(ListEmailsParams::new())
+  if options.after is Some(_) && options.before is Some(_) {
+    return Err(InvalidInput("after and before cannot be used together"))
+  }
+  let query : Array[String] = []
+  match options.limit {
+    Some(value) if value <= 0 || value > 100 =>
+      return Err(InvalidInput("email page limit must be between 1 and 100"))
+    Some(value) => query.push("limit=" + value.to_string())
+    None => ()
+  }
+  match options.after {
+    Some(value) => {
+      match validate_cursor("after", value) {
+        Err(error) => return Err(error)
+        Ok(_) => ()
+      }
+      query.push("after=" + value)
+    }
+    None => ()
+  }
+  match options.before {
+    Some(value) => {
+      match validate_cursor("before", value) {
+        Err(error) => return Err(error)
+        Ok(_) => ()
+      }
+      query.push("before=" + value)
+    }
+    None => ()
+  }
+  let suffix = if query.length() == 0 { "" } else { "?" + query.join("&") }
+  Ok({
+    verb: "GET",
+    url: self.base_url + "/emails" + suffix,
+    headers: self.headers().unwrap(),
+    body: None,
+  })
+}
+
+///|
 /// Reschedule an email that has not been sent yet.
 pub fn Client::update_request(
   self : Client,
@@ -228,6 +287,18 @@ pub fn Client::parse_retrieve_response(
 ) -> Result[RetrievedEmail, ResendError] {
   if response.status >= 200 && response.status < 300 {
     parse_retrieved_email(response.body)
+  } else {
+    Err(Api(parse_api_error(response.status, response.body, response.headers)))
+  }
+}
+
+///|
+pub fn Client::parse_list_emails_response(
+  _self : Client,
+  response : HttpResponse,
+) -> Result[EmailPage, ResendError] {
+  if response.status >= 200 && response.status <= 299 {
+    parse_email_page(response.body)
   } else {
     Err(Api(parse_api_error(response.status, response.body, response.headers)))
   }

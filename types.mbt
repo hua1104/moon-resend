@@ -247,6 +247,39 @@ pub fn EmailId::id(self : EmailId) -> String {
 }
 
 ///|
+/// Cursor pagination accepted by Resend GET /emails.
+pub struct ListEmailsParams {
+  limit : Int32?
+  after : String?
+  before : String?
+}
+
+///|
+pub fn ListEmailsParams::new(
+  limit? : Int32,
+  after? : String,
+  before? : String,
+) -> ListEmailsParams {
+  { limit, after, before, }
+}
+
+///|
+pub struct EmailPage {
+  data : Array[RetrievedEmail]
+  has_more : Bool
+}
+
+///|
+pub fn EmailPage::data(self : EmailPage) -> Array[RetrievedEmail] {
+  self.data.copy()
+}
+
+///|
+pub fn EmailPage::has_more(self : EmailPage) -> Bool {
+  self.has_more
+}
+
+///|
 pub struct ApiError {
   status : Int32
   name : String

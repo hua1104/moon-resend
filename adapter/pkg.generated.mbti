@@ -10,6 +10,8 @@ pub async fn cancel(@moon-resend.Client, String, timeout? : Int32) -> Result[@mo
 
 pub async fn execute(@moon-resend.HttpRequest, timeout? : Int32) -> Result[@moon-resend.HttpResponse, @moon-resend.ResendError]
 
+pub async fn list_emails(@moon-resend.Client, params? : @moon-resend.ListEmailsParams, timeout? : Int32) -> Result[@moon-resend.EmailPage, @moon-resend.ResendError]
+
 pub async fn retrieve(@moon-resend.Client, String, timeout? : Int32) -> Result[@moon-resend.RetrievedEmail, @moon-resend.ResendError]
 
 pub async fn send(@moon-resend.Client, @moon-resend.SendEmailParams, idempotency_key? : String, timeout? : Int32) -> Result[@moon-resend.EmailId, @moon-resend.ResendError]

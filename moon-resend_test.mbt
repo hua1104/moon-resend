@@ -372,3 +372,66 @@ test "webhook replay guard rejects duplicate IDs" {
     replay_guard.check_and_record("  ", 1700000000L) is Err(InvalidReplayId(_)),
   )
 }
+
+///|
+test "build and parse cursor-paginated email history" {
+  let client = @moon-resend.Client::new("re_test").unwrap()
+  let request = client
+    .list_emails_request(
+      params=@moon-resend.ListEmailsParams::new(limit=2, after="email_2"),
+    )
+    .unwrap()
+  assert_eq(request.verb(), "GET")
+  assert_eq(
+    request.url(),
+    "https://api.resend.com/emails?limit=2&after=email_2",
+  )
+  let page = client
+    .parse_list_emails_response(
+      @moon-resend.HttpResponse::new(
+        200, "{\"object\":\"list\",\"has_more\":true,\"data\":[{\"id\":\"email_3\",\"from\":\"from@example.com\",\"to\":[\"to@example.com\"],\"subject\":\"Three\",\"created_at\":\"2026-11-16T08:00:00Z\",\"last_event\":\"delivered\"}]}",
+      ),
+    )
+    .unwrap()
+  assert_true(page.has_more())
+  assert_eq(page.data().length(), 1)
+  assert_eq(page.data()[0].id(), "email_3")
+  assert_eq(page.data()[0].last_event(), Some("delivered"))
+}
+
+///|
+test "reject invalid email pagination and malformed pages" {
+  let client = @moon-resend.Client::new("re_test").unwrap()
+  assert_true(
+    client.list_emails_request(
+      params=@moon-resend.ListEmailsParams::new(limit=0),
+    )
+    is Err(InvalidInput(_)),
+  )
+  assert_true(
+    client.list_emails_request(
+      params=@moon-resend.ListEmailsParams::new(after="a", before="b"),
+    )
+    is Err(InvalidInput(_)),
+  )
+  assert_true(
+    client.list_emails_request(
+      params=@moon-resend.ListEmailsParams::new(after="a&x=1"),
+    )
+    is Err(InvalidInput(_)),
+  )
+  assert_true(
+    client.parse_list_emails_response(
+      @moon-resend.HttpResponse::new(200, "{\"data\":[]}"),
+    )
+    is Err(InvalidResponse(_)),
+  )
+  assert_true(
+    client.parse_list_emails_response(
+      @moon-resend.HttpResponse::new(
+        200, "{\"has_more\":false,\"data\":[{\"id\":\"broken\"}]}",
+      ),
+    )
+    is Err(InvalidResponse(_)),
+  )
+}
