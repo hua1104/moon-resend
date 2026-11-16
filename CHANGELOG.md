@@ -1,12 +1,14 @@
 # Changelog
 
-## 0.3.0 — Unreleased
+## 0.3.0 — 2026-11-16
 
 ### Added
 
 - Typed email.delivered projection through WebhookEvent::delivery.
 - Typed email.bounced details through WebhookEvent::bounce, including bounce
   type, subtype, message and SMTP diagnostic codes.
+- Repository coverage threshold and CI coverage artifact.
+- Production release checklist, benchmark protocol and OpenAPI baseline.
 
 ## 0.2.0 — 2026-11-16
 
@@ -24,6 +26,8 @@
   sends, signed callbacks, concurrent duplicates and last-observed email state.
 - Local-server integration coverage for headers, JSON bodies, lifecycle calls,
   typed API errors and transport timeouts.
+- Paginated sent-email history with validated limit, after and before cursors
+  and typed page metadata.
 
 ## 0.1.0 — 2026-11-10
 

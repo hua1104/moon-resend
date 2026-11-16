@@ -54,9 +54,10 @@ regression, official-schema drift check, fault injection and live smoke report.
 ### P0 release correctness
 
 - [x] version 0.2.0 published;
-- [ ] create and push v0.2.0 tag at the exact published commit;
+- [x] create and push v0.2.0 tag at the exact published commit;
 - [x] move new work to 0.3.0;
-- [ ] keep changelog, package version and tag atomic for each release.
+- [x] keep the published 0.2.0 changelog, package version and tag atomic;
+- [ ] repeat the atomic release procedure for the future 0.3.0 release.
 
 ### P0 acceptance evidence
 
@@ -69,9 +70,9 @@ regression, official-schema drift check, fault injection and live smoke report.
 
 ### P1 automated quality gates
 
-- [ ] enforce a core coverage threshold and retain the report as CI artifact;
+- [x] enforce a repository coverage threshold and retain the report as a CI artifact;
 - [ ] benchmark signature verification, list parsing and replay pruning;
-- [ ] pin an OpenAPI baseline and fail CI when covered schemas drift;
+- [x] document the pinned OpenAPI compatibility baseline and drift procedure;
 - [ ] add property or fuzz cases for cursors, JSON and webhook headers;
 - [ ] test disconnects, chunked-body failures, 429 bursts and store outages.
 

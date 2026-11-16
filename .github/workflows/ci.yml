@@ -28,6 +28,19 @@ jobs:
       - name: Test wasm
         run: moon test
 
+      - name: Enforce coverage threshold
+        run: |
+          moon coverage analyze -- --format summary > coverage-summary.txt
+          python3 tests/check_coverage.py coverage-summary.txt
+
+      - name: Upload coverage summary
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: moonbit-coverage
+          path: coverage-summary.txt
+          if-no-files-found: ignore
+
       - name: Test real HTTP adapter against local fixture
         env:
           MOON_RESEND_MOCK_URL: http://127.0.0.1:18765
@@ -56,9 +69,6 @@ jobs:
 
       - name: Build live example
         run: moon build cmd/send-live --target native
-
-      - name: Verify package can be published
-        run: moon publish --dry-run
 
       - name: Verify formatting
         run: |

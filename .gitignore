@@ -6,3 +6,5 @@ target
 .moonagent/
 __pycache__/
 *.pyc
+bisect.coverage
+coverage-summary.txt

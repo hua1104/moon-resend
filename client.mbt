@@ -5,6 +5,11 @@ pub struct Client {
 }
 
 ///|
+/// SDK version sent in the User-Agent header. Keep this synchronized with
+/// moon.mod for every release.
+pub const SDK_VERSION : String = "0.3.0"
+
+///|
 pub fn Client::new(
   api_key : String,
   base_url? : String,
@@ -31,7 +36,7 @@ fn Client::headers(
   let headers = [
     ("Authorization", "Bearer " + self.api_key),
     ("Content-Type", "application/json"),
-    ("User-Agent", "moon-resend/0.2.0"),
+    ("User-Agent", "moon-resend/" + SDK_VERSION),
   ]
   match idempotency_key {
     Some(value) => {

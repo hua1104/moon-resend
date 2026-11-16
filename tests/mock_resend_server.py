@@ -104,7 +104,7 @@ class Handler(BaseHTTPRequestHandler):
             self._authorized()
             and self.headers.get("Content-Type") == "application/json"
             and self.headers.get("Idempotency-Key") == "integration-42"
-            and self.headers.get("User-Agent") == "moon-resend/0.2.0"
+            and self.headers.get("User-Agent") == "moon-resend/0.3.0"
             and payload.get("subject") == "Integration test"
             and payload.get("to") == ["user@example.com"]
             and payload.get("html") == "<strong>Hello</strong>"
